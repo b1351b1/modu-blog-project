@@ -141,7 +141,7 @@ FastAPI는 자동으로 API 문서를 생성합니다.
 - 대댓글 작성 (`POST /blog/{post_id}/comments/{comment_id}/replies`)
 - 계층형 댓글 구조
 
-### 4. 문제 선택 기능 (핵심)
+### 4. 문제 선택 기능
 - 문제 목록 조회 (`GET /problems`)
 - 문제 선택 (`POST /problems/my`)
 - 내가 선택한 문제 조회 (`GET /problems/my`)
@@ -157,22 +157,16 @@ FastAPI는 자동으로 API 문서를 생성합니다.
 ## 🗄 데이터베이스 스키마
 
 ### User (사용자)
-- id, username, hashed_password, nickname, created_at
 
 ### Problem (문제)
-- id, year, number, title, description
 
 ### UserProblem (사용자-문제 선택)
-- id, user_id, problem_id, memo, created_at
 
 ### Post (게시글)
-- id, title, content, category, author_id, created_at, updated_at
 
 ### Comment (댓글)
-- id, content, post_id, user_id, parent_id, created_at, updated_at
 
 ### ChatMessage (채팅 메시지)
-- id, user_id, role, content, created_at
 
 ## 🔧 개발 가이드
 
