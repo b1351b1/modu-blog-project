@@ -12,7 +12,6 @@ FastAPI 기반의 블로그 플랫폼 프로젝트입니다.
 - **Python**: 3.9+
 - **FastAPI**: 웹 프레임워크
 - **SQLAlchemy**: ORM
-- **Alembic**: 데이터베이스 마이그레이션
 - **SQLite**: 데이터베이스
 - **Redis**: 캐싱 및 인기 문제 추적
 - **JWT**: 인증/인가
@@ -52,7 +51,6 @@ project/
 │   ├── problem_select.html
 │   └── chat.html
 ├── static/                 # 정적 파일 (CSS, JS)
-├── alembic/               # 마이그레이션 파일
 ├── requirements.txt       # 패키지 의존성
 └── README.md             # 프로젝트 설명서
 ```
@@ -88,10 +86,18 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 OPENAI_API_KEY=your-openai-api-key-here
 ```
 
-### 4. 데이터베이스 마이그레이션
+### 4. 데이터베이스 초기화
 
-```bash
-alembic upgrade head
+애플리케이션을 처음 실행하면 SQLAlchemy가 자동으로 데이터베이스 테이블을 생성합니다.
+또는 다음 코드를 `main.py`에 추가하여 수동으로 테이블을 생성할 수 있습니다:
+
+```python
+from database import engine, Base
+
+# 애플리케이션 시작 시 테이블 생성
+@app.on_event("startup")
+def startup():
+    Base.metadata.create_all(bind=engine)
 ```
 
 ### 5. 서버 실행
@@ -198,15 +204,14 @@ Postman을 사용하여 API 테스트를 진행합니다.
 
 ## 👥 팀원 및 역할
 
-- **팀원 A**: 문제 등록(핵심 기능) + 프론트엔드
-- **팀원 B**: 인증 + AI 채팅
-- **팀원 C**: 게시글 CRUD + 댓글
+- **팀원 A**: 인증 + 문제 관리 + Redis
+- **팀원 B**: 게시글 + 프론트 + 배포
+- **팀원 C**: 댓글 + AI + 데이터
+
 
 ## 📅 개발 일정
 
-**프로젝트 기간**: 2025년 10월 1일 ~ 10월 15일 (총 2주)
-
-자세한 일정은 [WBS 문서](WBS%20상세설명.md)를 참고하세요.
+**프로젝트 기간**: 2025년 10월 1일 ~ 10월 16일 
 
 ## 🐛 트러블슈팅
 

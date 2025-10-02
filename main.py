@@ -17,8 +17,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 데이터베이스 테이블 생성 (첫 실행 시)
-# 실제로는 Alembic을 통해 마이그레이션을 관리합니다
+# 애플리케이션 시작 시 데이터베이스 테이블 자동 생성
+# 모든 모델이 임포트된 후 실행됩니다
 Base.metadata.create_all(bind=engine)
 
 # 정적 파일 서빙 설정
