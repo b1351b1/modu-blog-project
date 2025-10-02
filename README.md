@@ -141,7 +141,7 @@ FastAPI는 자동으로 API 문서를 생성합니다.
 - 대댓글 작성 (`POST /blog/{post_id}/comments/{comment_id}/replies`)
 - 계층형 댓글 구조
 
-### 4. 문제 선택 기능 (핵심)
+### 4. 문제 선택 기능
 - 문제 목록 조회 (`GET /problems`)
 - 문제 선택 (`POST /problems/my`)
 - 내가 선택한 문제 조회 (`GET /problems/my`)
