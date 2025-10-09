@@ -3,9 +3,9 @@ from sqlalchemy.sql import func
 from database import Base
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "User"
     
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password = Column(String(255), nullable=False) 
     name = Column(String(255), unique=True, nullable=False, index=True) 
