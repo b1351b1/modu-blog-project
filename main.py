@@ -4,6 +4,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 import os
+from routers import comment 
+from models.user import User
+from models.comment import Comment
+
+
 
 # FastAPI 앱 생성
 app = FastAPI()
@@ -29,11 +34,11 @@ if os.path.exists("static"):
 templates = Jinja2Templates(directory="templates")
 
 # 라우터 임포트 및 등록 (나중에 추가)
-# from routers import auth, blog, problem, chat
+from routers import auth, blog, comment, problem, 
 # app.include_router(auth.router, prefix="/auth", tags=["인증"])
 # app.include_router(blog.router, prefix="/blog", tags=["게시글"])
 # app.include_router(problem.router, prefix="/problems", tags=["문제"])
-# app.include_router(chat.router, prefix="/chat", tags=["채팅"])
+app.include_router(comment.router)
 
 # 루트 엔드포인트
 @app.get("/")

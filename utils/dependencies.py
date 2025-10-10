@@ -26,7 +26,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             raise HTTPException(status_code=401, detail="토큰이 유효하지 않습니다.")
         
         # DB에서 사용자 조회
-        user = db.query(User).filter(User.id == user_id).first()
+        user = db.query(User).filter(User.user_id == user_id).first()
         if user is None:
             raise HTTPException(status_code=401, detail="사용자를 찾을 수 없습니다.")
         
