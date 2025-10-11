@@ -31,25 +31,14 @@ project/
 │   ├── user.py
 │   ├── problem.py
 │   ├── post.py
-│   ├── comment.py
-│   └── chat.py
+│   └── comment.py
 ├── routers/                # API 라우터
 │   ├── auth.py            # 인증 API
 │   ├── problem.py         # 문제 관련 API
-│   ├── blog.py            # 게시글 API
-│   └── chat.py            # 채팅 API
+│   └── blog.py            # 게시글 API
 ├── utils/                  # 유틸리티 함수
-│   ├── auth.py            # JWT 관련 함수
-│   ├── dependencies.py    # FastAPI dependencies
-│   └── openai_helper.py   # OpenAI API 헬퍼
+│   └── dependencies.py    # FastAPI dependencies
 ├── templates/              # HTML 템플릿
-│   ├── login.html
-│   ├── register.html
-│   ├── index.html
-│   ├── post_detail.html
-│   ├── mypage.html
-│   ├── problem_select.html
-│   └── chat.html
 ├── static/                 # 정적 파일 (CSS, JS)
 ├── requirements.txt       # 패키지 의존성
 └── README.md             # 프로젝트 설명서
@@ -149,10 +138,6 @@ FastAPI는 자동으로 API 문서를 생성합니다.
 - 인기 문제 Top 10 조회 (`GET /problems/popular`)
 - Redis 기반 캐싱 및 인기도 추적
 
-### 5. AI 채팅 기능
-- 채팅 메시지 전송 (`POST /chat/message`)
-- 채팅 기록 조회 (`GET /chat/history`)
-- OpenAI GPT 기반 대화
 
 ## 🗄 데이터베이스 스키마
 
@@ -165,8 +150,6 @@ FastAPI는 자동으로 API 문서를 생성합니다.
 ### Post (게시글)
 
 ### Comment (댓글)
-
-### ChatMessage (채팅 메시지)
 
 ## 🔧 개발 가이드
 
