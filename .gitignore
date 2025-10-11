@@ -29,5 +29,8 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Alembic
-alembic/versions/*.pyc
+
+uploads/
+*.pyc
+
+
