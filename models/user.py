@@ -15,3 +15,4 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     comments = relationship("Comment", back_populates="user")
+    user_problems = relationship("UserProblem", back_populates="user")
