@@ -7,7 +7,7 @@ from database import Base
 class Comment(Base):
     __tablename__ = "Comment"
     
-    comment_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    comment_id = Column(Integer, primary_key=True, index=True)
     post_id = Column(Integer, ForeignKey("Post.post_id"), nullable=False)
     user_id = Column(Integer, ForeignKey("User.user_id"), nullable=False)
     parent_comment_id = Column(Integer, ForeignKey("Comment.comment_id"), nullable=True)
@@ -15,7 +15,6 @@ class Comment(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
-    # Relationships
     # 댓글이 속한 게시글
     post = relationship("Post", back_populates="comments")
     

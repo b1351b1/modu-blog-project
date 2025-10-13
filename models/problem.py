@@ -8,7 +8,7 @@ class Problem(Base):
     """문제 모델"""
     __tablename__ = "Problem"
     
-    problem_id = Column(Integer, primary_key=True, autoincrement=True)
+    problem_id = Column(Integer, primary_key=True)
     year = Column(Integer, nullable=False)
     month = Column(Integer, nullable=False)
     number = Column(Integer, nullable=False)
@@ -22,7 +22,6 @@ class Problem(Base):
         UniqueConstraint('year', 'month', 'number', name='unique_problem'),
     )
     
-    # Relationship
     user_problems = relationship("UserProblem", back_populates="problem", cascade="all, delete-orphan")
 
 
@@ -30,7 +29,7 @@ class UserProblem(Base):
     """사용자가 선택한 문제 모델"""
     __tablename__ = "UserProblem"
     
-    user_problem_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_problem_id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('User.user_id'), nullable=False)
     problem_id = Column(Integer, ForeignKey('Problem.problem_id'), nullable=False)
     selection_count = Column(Integer, default=1)
@@ -43,6 +42,5 @@ class UserProblem(Base):
         UniqueConstraint('user_id', 'problem_id', name='unique_user_problem'),
     )
     
-    # Relationships
     user = relationship("User", back_populates="user_problems")
     problem = relationship("Problem", back_populates="user_problems")

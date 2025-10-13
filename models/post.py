@@ -7,7 +7,7 @@ from database import Base
 class Post(Base):
     __tablename__ = "Post"
     
-    post_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    post_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("User.user_id"), nullable=False)
     title = Column(String(255), nullable=False)
     content = Column(Text, nullable=False)
@@ -30,7 +30,7 @@ class Post(Base):
 class Tag(Base):
     __tablename__ = "Tag"
     
-    tag_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    tag_id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), unique=True, nullable=False, index=True)
     created_at = Column(DateTime, default=func.now())
     
@@ -47,7 +47,7 @@ class Tag(Base):
 class PostTag(Base):
     __tablename__ = "PostTag"
     
-    post_tag_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    post_tag_id = Column(Integer, primary_key=True, index=True)
     post_id = Column(Integer, ForeignKey("Post.post_id"), nullable=False)
     tag_id = Column(Integer, ForeignKey("Tag.tag_id"), nullable=False)
     created_at = Column(DateTime, default=func.now())
