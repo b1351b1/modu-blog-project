@@ -11,7 +11,7 @@ class Post(Base):
     user_id = Column(Integer, ForeignKey("User.user_id"), nullable=False)
     title = Column(String(255), nullable=False)
     content = Column(Text, nullable=False)
-    category = Column(String(255), nullable=False)  # "입시정보" or "과목별지식"
+    category = Column(String(255), nullable=False)  # "입시정보" or "영어지식"
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
