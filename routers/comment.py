@@ -9,7 +9,7 @@ from models.post import Post
 from models.user import User
 from utils.dependencies import get_current_user
 
-router = APIRouter(prefix="/blog", tags=["comments"])
+router = APIRouter()
 
 
 # Pydantic 스키마 정의

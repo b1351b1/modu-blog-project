@@ -38,7 +38,7 @@ from routers import auth, blog, comment, problem
 app.include_router(auth.router, prefix="/auth", tags=["인증"])
 app.include_router(blog.router, prefix="/blog", tags=["게시글"])
 app.include_router(problem.router, prefix="/problems", tags=["문제"])
-app.include_router(comment.router)
+app.include_router(comment.router, prefix="/blog", tags=["댓글"])
 
 # 루트 엔드포인트
 @app.get("/")
