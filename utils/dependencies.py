@@ -32,10 +32,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         
         return user
     except:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="유효하지 않은 토큰입니다.")
 
 # 관리자 권한 체크 dependency
 def get_current_admin(current_user: User = Depends(get_current_user)):
     if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Admin access required")
+        raise HTTPException(status_code=403, detail="관리자 권한이 필요합니다.")
     return current_user
