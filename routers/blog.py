@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 from pydantic import BaseModel
@@ -8,7 +8,8 @@ from enum import Enum
 from database import get_db
 from models.post import Post, Tag, PostTag
 from models.user import User
-from utils.dependencies import get_current_admin
+from models.comment import Comment
+from utils.dependencies import get_current_admin, get_current_user
 
 router = APIRouter()
 
@@ -23,9 +24,26 @@ class PostCreate(BaseModel):
     category: CategoryEnum
     tags: list[str] = []  # 자유롭게 태그 입력
 
+class PostUpdate(BaseModel):
+    title: str
+    content: str
+    category: CategoryEnum
+    tags: list[str] = []
+
+def get_post_check(db: Session, post_id: int):
+   # 게시글 존재 확인
+    post = db.query(Post).filter(Post.post_id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
+    return post
+
+def check_post_author(post: Post, user: User):
+    # 작성자 권한 확인
+    if post.user_id != user.user_id:
+        raise HTTPException(status_code=403, detail="게시글 수정 권한이 없습니다.")
 
 def make_post_response(post: Post):
-    """게시글 응답 딕셔너리 생성"""
+    # 게시글 응답 딕셔너리 생성
     return {
         "id": post.post_id,
         "title": post.title,
@@ -76,10 +94,7 @@ def create_post(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    """
-    게시글 작성 - 관리자 전용
-    """
-    
+   
     # 현재 시간
     now = datetime.now()
     created_at = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -118,9 +133,7 @@ def get_posts(
     search: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    """
-    게시글 목록 조회 및 검색
-    """
+  
     # 기본 쿼리
     query = db.query(Post)
     
@@ -172,9 +185,7 @@ def get_posts_by_tag(
     sort: str = Query("desc"),
     db: Session = Depends(get_db)
 ):
-    """
-    특정 태그의 게시글 목록 조회
-    """
+
     # 태그 찾기
     tag = db.query(Tag).filter(Tag.name == tag_name).first()
     
@@ -205,3 +216,88 @@ def get_posts_by_tag(
         "limit": limit,
         "posts": [make_post_response(post) for post in posts]
     }
+
+
+# ===== 4. 게시글 상세 조회 =====
+@router.get("/{post_id}")
+def get_post(post_id: int, db: Session = Depends(get_db)):
+ 
+    post = get_post_check(db, post_id)
+
+    response = make_post_response(post)
+    
+    # 댓글 목록 가져오기 (대댓글 제외)
+    comments = []
+    for comment in post.comments:
+        if comment.parent_comment_id is None:
+            comments.append({
+                "id": comment.comment_id,
+                "content": comment.content,
+                "user_id": comment.user_id,
+                "user": {
+                    "nickname": comment.user.nickname
+                },
+                "created_at": comment.created_at
+            })
+    
+    response["comments"] = comments
+    
+    return response
+
+
+# ===== 5. 게시글 수정 =====
+
+@router.put("/{post_id}")
+def update_post(
+    post_id: int,
+    post_data: PostUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+  
+    post = get_post_check(db, post_id)
+    
+    check_post_author(post, current_user)
+    
+    # 게시글 정보 수정
+    post.title = post_data.title
+    post.content = post_data.content
+    post.category = post_data.category
+    
+    # 수정 시간 업데이트
+    now = datetime.now()
+    post.updated_at = now.strftime("%Y-%m-%d %H:%M:%S")
+    
+    # 항상 기존 태그 연결 삭제
+    db.query(PostTag).filter(PostTag.post_id == post.post_id).delete()
+    
+    # 새로운 태그 추가 
+    if post_data.tags:
+        handle_tags(db, post, post_data.tags, post.updated_at)
+    
+    db.commit()
+    db.refresh(post)
+    
+    # 응답 반환
+    return make_post_response(post)
+
+
+# ===== 6. 게시글 삭제 =====
+
+@router.delete("/{post_id}")
+def delete_post(
+    post_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    post = get_post_check(db, post_id)
+
+    check_post_author(post, current_user)
+    
+    # 삭제 
+    db.delete(post)
+    db.commit()
+    
+    return {"message": "게시물이 삭제되었습니다."}
+
