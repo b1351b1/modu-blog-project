@@ -9,7 +9,7 @@ from database import get_db
 from models.post import Post, Tag, PostTag
 from models.user import User
 from models.comment import Comment
-from utils.dependencies import get_current_admin, get_current_user
+from utils.dependencies import get_current_admin, get_current_user, get_post_check
 
 router = APIRouter()
 
@@ -29,13 +29,6 @@ class PostUpdate(BaseModel):
     content: str
     category: CategoryEnum
     tags: list[str] = []
-
-def get_post_check(db: Session, post_id: int):
-   # 게시글 존재 확인
-    post = db.query(Post).filter(Post.post_id == post_id).first()
-    if not post:
-        raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
-    return post
 
 def check_post_author(post: Post, user: User):
     # 작성자 권한 확인

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
+from models.post import Post
 
 SECRET_KEY = "TEST-ASDASDASDASDASDASDASDSA"
 ALGORITHM = "HS256"
@@ -39,3 +40,10 @@ def get_current_admin(current_user: User = Depends(get_current_user)):
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="관리자 권한이 필요합니다.")
     return current_user
+
+# 게시글 존재 확인
+def get_post_check(db: Session, post_id: int):
+    post = db.query(Post).filter(Post.post_id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
+    return post
