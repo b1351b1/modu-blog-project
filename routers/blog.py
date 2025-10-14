@@ -79,13 +79,21 @@ def handle_tags(db: Session, post: Post, tag_names: list[str], timestamp: str):
             db.add(tag)
             db.flush() # 임시저장
         
+        # 이미 연결되어 있는지 확인
+        existing = db.query(PostTag).filter(
+           PostTag.post_id == post.post_id,
+           PostTag.tag_id == tag.tag_id
+        ).first()
+
         # 게시글-태그 연결
-        post_tag = PostTag(
-            post_id=post.post_id,
-            tag_id=tag.tag_id,
-            created_at=timestamp
-        )
-        db.add(post_tag)
+        if not existing:
+            post_tag = PostTag(  
+                post_id=post.post_id,
+                tag_id=tag.tag_id,
+                created_at=timestamp
+            )
+            db.add(post_tag) 
+        
 
 
 # ===== 이미지 업로드 API (게시글 작성 전 사용) =====
