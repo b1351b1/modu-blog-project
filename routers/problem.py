@@ -188,6 +188,12 @@ def select_problem(
     문제 선택 API
     - 특정 문제를 내 문제 목록에 추가
     - 이미 선택한 문제면 selection_count 증가
+    - Redis 인기도는 선택할 때마다 +1 (실제 서비스 이용 횟수)
+    
+    ※ 비즈니스 로직:
+      - 같은 문제 3번 선택 = 3번의 서비스 이용 (변형문제, 분석 등)
+      - 각 선택은 독립적인 과금 대상
+      - 인기도 = 실제 서비스 이용 횟수 = 수요 지표
     """
     # 문제 존재 확인
     problem = db.query(Problem).filter(Problem.problem_id == request.problem_id).first()
@@ -268,6 +274,12 @@ def delete_my_problem(
     문제 선택 취소 API
     - 내 문제 목록에서 삭제
     - 본인이 선택한 문제만 삭제 가능
+    - Redis 인기도는 유지 (과거 수요 데이터 보존)
+    
+    ※ 비즈니스 로직:
+      - 삭제 = 마이페이지 정리용
+      - 이미 서비스 이용 완료 & 과금 완료
+      - 인기도는 '실제 서비스 이용 횟수'이므로 삭제와 무관
     """
     user_problem = db.query(UserProblem).filter(
         UserProblem.user_problem_id == user_problem_id
@@ -286,15 +298,9 @@ def delete_my_problem(
             detail="문제를 삭제할 권한이 없습니다."
         )
     
-    problem_id = user_problem.problem_id
-    
     # 삭제
     db.delete(user_problem)
     db.commit()
-    
-    # Redis에서 인기도 카운트 감소
-    if redis_client:
-        redis_client.zincrby("popular_problems", -1, problem_id)
     
     return {"message": "문제가 내 문제 목록에서 삭제되었습니다."}
 
