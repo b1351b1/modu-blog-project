@@ -23,25 +23,66 @@ FastAPI 기반의 블로그 플랫폼 프로젝트입니다.
 ## 📁 프로젝트 구조
 
 ```
+## 📁 프로젝트 구조
+```
 project/
 ├── main.py                 # FastAPI 애플리케이션 진입점
 ├── database.py             # 데이터베이스 연결 설정
+├── requirements.txt        # 패키지 의존성
+│
 ├── models/                 # SQLAlchemy 모델
 │   ├── user.py
 │   ├── problem.py
 │   ├── post.py
 │   └── comment.py
+│
 ├── routers/                # API 라우터
 │   ├── auth.py            # 인증 API
 │   ├── problem.py         # 문제 관련 API
 │   ├── blog.py            # 게시글 API
-|   └── comment.py         # 댓글 API
+│   └── comment.py         # 댓글 API
+│
 ├── utils/                  # 유틸리티 함수
-│   └── dependencies.py    
+│   └── dependencies.py    # JWT 인증 등
+│
 ├── templates/              # HTML 템플릿
-├── static/                 # 정적 파일 (CSS, JS)
-├── requirements.txt       # 패키지 의존성
-└── README.md             # 프로젝트 설명서
+│   ├── intro.html
+│   ├── index.html
+│   ├── login.html
+│   ├── join.html
+│   ├── view.html
+│   ├── write.html
+│   ├── problem-select.html
+│   ├── problem-register.html
+│   └── mypage.html
+│
+├── static/                 # 정적 파일
+│   ├── css/
+│   │   ├── common.css
+│   │   ├── intro.css
+│   │   ├── list.css
+│   │   ├── login-join.css
+│   │   ├── view.css
+│   │   ├── write.css
+│   │   ├── table.css
+│   │   ├── problem-select.css
+│   │   ├── problem-register.css
+│   │   └── mypage.css
+│   └── img/
+│       ├── icon-search.png
+│       ├── first.png
+│       ├── prev.png
+│       ├── next.png
+│       └── last.png
+│
+├── uploads/                # 업로드된 파일
+│   ├── posts/             # 게시글 이미지
+│   └── problems/          # 문제 파일
+│
+├── blog.db                # SQLite 데이터베이스
+├── README.md             # 프로젝트 설명서
+└── project_requirements.md
+
 ```
 
 ## 🚀 설치 및 실행
