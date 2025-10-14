@@ -6,8 +6,9 @@ from database import engine, Base
 import os
 from routers import comment 
 from models.user import User
+from models.post import Post, Tag, PostTag
 from models.comment import Comment
-
+from models.problem import Problem, UserProblem
 
 
 # FastAPI 앱 생성

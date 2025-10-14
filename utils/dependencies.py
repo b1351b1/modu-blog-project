@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt
+from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from database import get_db
@@ -32,7 +32,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             raise HTTPException(status_code=401, detail="사용자를 찾을 수 없습니다.")
         
         return user
-    except:
+    except JWTError:
         raise HTTPException(status_code=401, detail="유효하지 않은 토큰입니다.")
 
 # 관리자 권한 체크 dependency
