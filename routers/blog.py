@@ -38,6 +38,9 @@ class PostUpdate(BaseModel):
     tags: list[str] = []
     image_url: Optional[str] = None
 
+class DeleteMultipleRequest(BaseModel):
+    post_ids: list[int]
+
 def check_post_author(post: Post, user: User):
     # 작성자 권한 확인
     if post.user_id != user.user_id:
@@ -57,6 +60,7 @@ def make_post_response(post: Post):
             "nickname": post.author.nickname
         },
         "tags": [tag.name for tag in post.tags],
+        "view_count": post.view_count or 0,
         "created_at": post.created_at,
         "updated_at": post.updated_at
     }
@@ -267,6 +271,10 @@ def get_post(post_id: int, db: Session = Depends(get_db)):
  
     post = get_post_check(db, post_id)
 
+    # 조회수 증가
+    post.view_count = (post.view_count or 0) + 1
+    db.commit()
+    
     response = make_post_response(post)
     
     # 댓글 목록 가져오기 (대댓글 제외)
@@ -347,4 +355,26 @@ def delete_post(
     db.commit()
     
     return {"message": "게시물이 삭제되었습니다."}
+
+@router.delete("/delete-multiple")
+def delete_multiple_posts(
+    request: DeleteMultipleRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """여러 게시글 삭제 (관리자만 가능)"""
+    # 관리자 여부 확인
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="관리자만 게시글을 삭제할 수 있습니다.")
+
+    deleted_count = 0
+
+    for post_id in request.post_ids:
+        post = db.query(Post).filter(Post.post_id == post_id).first()
+        if post:
+            db.delete(post)
+            deleted_count += 1
+
+    db.commit()
+    return {"message": f"{deleted_count}개의 게시글이 삭제되었습니다."}
 
