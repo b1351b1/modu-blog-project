@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
 from enum import Enum
+
+import os
+import shutil
 
 from database import get_db
 from models.post import Post, Tag, PostTag
@@ -12,6 +15,9 @@ from models.comment import Comment
 from utils.dependencies import get_current_admin, get_current_user, get_post_check
 
 router = APIRouter()
+
+UPLOAD_DIR = "uploads/posts"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 class CategoryEnum(str, Enum):
@@ -22,13 +28,15 @@ class PostCreate(BaseModel):
     title: str
     content: str
     category: CategoryEnum
-    tags: list[str] = []  # 자유롭게 태그 입력
+    tags: list[str] = [] 
+    image_url: Optional[str] = None
 
 class PostUpdate(BaseModel):
     title: str
     content: str
     category: CategoryEnum
     tags: list[str] = []
+    image_url: Optional[str] = None
 
 def check_post_author(post: Post, user: User):
     # 작성자 권한 확인
@@ -80,6 +88,37 @@ def handle_tags(db: Session, post: Post, tag_names: list[str], timestamp: str):
         db.add(post_tag)
 
 
+# ===== 이미지 업로드 API (게시글 작성 전 사용) =====
+@router.post("/images")
+async def upload_image(
+    image: UploadFile = File(...),
+    current_user: User = Depends(get_current_admin)
+):
+    """
+    이미지 업로드 API
+    - 게시글 작성 전에 이미지를 먼저 업로드
+    - 업로드된 이미지 URL을 반환
+    """
+    # 파일 확장자 검증
+    allowed_extensions = ['.jpg', '.jpeg', '.png']
+    file_extension = os.path.splitext(image.filename)[1].lower()
+    
+    if file_extension not in allowed_extensions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"지원하지 않는 이미지 형식입니다. 업로드 가능한 형식: {', '.join(allowed_extensions)}"
+        )
+    
+    # 파일 저장
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"{timestamp}_{image.filename}"
+    file_path = os.path.join(UPLOAD_DIR, file_name)
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(image.file, buffer)
+    
+    return {"image_url": f"/{file_path}"}
+
 # ===== 1. 게시글 작성 (관리자만) =====
 @router.post("", status_code=201)
 def create_post(
@@ -102,6 +141,9 @@ def create_post(
         updated_at=created_at
     )
     
+    if post_data.image_url and hasattr(new_post, 'image_url'):
+        new_post.image_url = post_data.image_url
+
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -257,6 +299,10 @@ def update_post(
     post.content = post_data.content
     post.category = post_data.category
     
+    if post_data.image_url and hasattr(post, 'image_url'):
+        post.image_url = post_data.image_url
+
+        
     # 수정 시간 업데이트
     now = datetime.now()
     post.updated_at = now.strftime("%Y-%m-%d %H:%M:%S")

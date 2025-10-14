@@ -14,6 +14,7 @@ class Post(Base):
     category = Column(String(255), nullable=False)  # "입시정보" or "영어지식"
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    image_url = Column(String(500), nullable=True)
     
     author = relationship("User", back_populates="posts")
     comments = relationship("Comment", back_populates="post", cascade="all, delete-orphan")
