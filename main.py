@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from database import engine, Base
 import os
 from routers import comment 
@@ -31,6 +32,10 @@ Base.metadata.create_all(bind=engine)
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# templates 폴더도 정적 파일로 서빙 (HTML 직접 접근 가능하도록)
+if os.path.exists("templates"):
+    app.mount("/templates", StaticFiles(directory="templates", html=True), name="templates")
+
 # Jinja2 템플릿 설정
 templates = Jinja2Templates(directory="templates")
 
@@ -42,13 +47,9 @@ app.include_router(problem.router, prefix="/problems", tags=["문제"])
 app.include_router(comment.router, prefix="/blog", tags=["댓글"])
 
 # 루트 엔드포인트
-@app.get("/")
-async def root():
-    return {
-        "message": "블로그 프로젝트 API에 오신 것을 환영합니다!",
-        "docs": "/docs",
-        "redoc": "/redoc"
-    }
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse("intro.html", {"request": request})
 
 # 헬스 체크 엔드포인트
 @app.get("/health")
