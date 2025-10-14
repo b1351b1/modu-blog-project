@@ -70,6 +70,13 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
             detail="이미 존재하는 이메일입니다."
         )
     
+    # 비밀번호 길이 검증 추가
+    if len(request.password) > 50:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="비밀번호는 최대 50자까지 입력 가능합니다."
+        )
+
     # 비밀번호 해싱
     hashed_password = pwd_context.hash(request.password)
     
@@ -99,6 +106,9 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     """
     # 사용자 조회
     user = db.query(User).filter(User.name == request.name).first()
+
+    # 비밀번호 검증 시에도 72바이트로 제한
+    password_to_verify = request.password[:72]
     
     # 사용자가 없거나 비밀번호가 틀린 경우
     if not user or not pwd_context.verify(request.password, user.password):
