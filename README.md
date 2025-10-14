@@ -4,7 +4,7 @@ FastAPI 기반의 블로그 플랫폼 프로젝트입니다.
 
 ## 📌 프로젝트 개요
 
-이 프로젝트는 JWT 인증, 게시글 CRUD, 댓글 기능, AI 채팅, 문제 선택 기능을 포함한 종합 블로그 플랫폼입니다.
+이 프로젝트는 JWT 인증, 게시글 CRUD, 댓글 기능, 문제 선택 기능을 포함한 종합 블로그 플랫폼입니다.
 
 ## 🛠 기술 스택
 
@@ -15,7 +15,6 @@ FastAPI 기반의 블로그 플랫폼 프로젝트입니다.
 - **SQLite**: 데이터베이스
 - **Redis**: 캐싱 및 인기 문제 추적
 - **JWT**: 인증/인가
-- **OpenAI API**: AI 채팅 기능
 
 ### Frontend
 - **HTML/CSS/JavaScript**: UI 구현
@@ -35,9 +34,10 @@ project/
 ├── routers/                # API 라우터
 │   ├── auth.py            # 인증 API
 │   ├── problem.py         # 문제 관련 API
-│   └── blog.py            # 게시글 API
+│   ├── blog.py            # 게시글 API
+|   └── comment.py         # 댓글 API
 ├── utils/                  # 유틸리티 함수
-│   └── dependencies.py    # FastAPI dependencies
+│   └── dependencies.py    
 ├── templates/              # HTML 템플릿
 ├── static/                 # 정적 파일 (CSS, JS)
 ├── requirements.txt       # 패키지 의존성
@@ -128,7 +128,6 @@ FastAPI는 자동으로 API 문서를 생성합니다.
 - 댓글 수정 (`PUT /blog/{post_id}/comments/{comment_id}`)
 - 댓글 삭제 (`DELETE /blog/{post_id}/comments/{comment_id}`)
 - 대댓글 작성 (`POST /blog/{post_id}/comments/{comment_id}/replies`)
-- 계층형 댓글 구조
 
 ### 4. 문제 선택 기능
 - 문제 목록 조회 (`GET /problems`)
@@ -169,22 +168,9 @@ test: 테스트 코드
 chore: 빌드 업무, 패키지 관리
 ```
 
-### 코딩 컨벤션
-- PEP 8 스타일 가이드 준수
-- 함수/변수명: snake_case
-- 클래스명: PascalCase
-- 상수: UPPER_CASE
-
 ## 🧪 테스트
 
 Postman을 사용하여 API 테스트를 진행합니다.
-
-## 👥 팀원 및 역할
-
-- **팀원 A**: 인증 + 문제 관리 + Redis
-- **팀원 B**: 게시글 + 프론트 + 배포
-- **팀원 C**: 댓글 + AI + 데이터
-
 
 ## 📅 개발 일정
 
@@ -194,10 +180,3 @@ Postman을 사용하여 API 테스트를 진행합니다.
 
 프로젝트 진행 중 발생한 주요 이슈와 해결 방법은 추후 업데이트됩니다.
 
-## 📝 라이선스
-
-이 프로젝트는 교육 목적으로 만들어졌습니다.
-
-## 📞 문의사항
-
-문제가 발생하거나 질문이 있으시면 이슈를 등록해주세요.
