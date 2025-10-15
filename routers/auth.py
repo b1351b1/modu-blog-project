@@ -28,6 +28,7 @@ class UpdateProfileRequest(BaseModel):
 class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str
+    new_password_confirm: str
 
 class UserResponse(BaseModel):
     user_id: int
@@ -177,6 +178,20 @@ def change_password(
             detail="현재 비밀번호가 올바르지 않습니다."
         )
     
+    # 새 비밀번호와 새 비밀번호 확인이 일치하는지 검증
+    if request.new_password != request.new_password_confirm:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="새 비밀번호가 서로 일치하지 않습니다."
+        )
+
+    # 새 비밀번호가 현재 비밀번호와 같은지 검증
+    if request.current_password == request.new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="새 비밀번호는 현재 비밀번호와 달라야 합니다."
+        )
+
     # 새 비밀번호 해싱 및 저장
     current_user.password = pwd_context.hash(request.new_password)
     db.commit()
