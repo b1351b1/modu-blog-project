@@ -32,6 +32,10 @@ Base.metadata.create_all(bind=engine)
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# uploads 폴더 마운트 추가 (문제 파일 다운로드용)
+if os.path.exists("uploads"):
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 # templates 폴더도 정적 파일로 서빙 (HTML 직접 접근 가능하도록)
 if os.path.exists("templates"):
     app.mount("/templates", StaticFiles(directory="templates", html=True), name="templates")
@@ -39,7 +43,7 @@ if os.path.exists("templates"):
 # Jinja2 템플릿 설정
 templates = Jinja2Templates(directory="templates")
 
-# 라우터 임포트 및 등록 (나중에 추가)
+# 라우터 임포트 및 등록 
 from routers import auth, blog, comment, problem
 app.include_router(auth.router, prefix="/auth", tags=["인증"])
 app.include_router(blog.router, prefix="/blog", tags=["게시글"])
