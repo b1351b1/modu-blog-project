@@ -1,0 +1,110 @@
+/* intro 페이지 스타일 */
+
+.intro-container {
+  text-align: center;
+  padding: 80px 0;
+}
+
+.intro-title {
+  font-size: 32px;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.intro-desc {
+  font-size: 16px;
+  color: #767676;
+  margin-bottom: 60px;
+}
+
+/* 카드 컨테이너 */
+.card-container {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+/* 카드 스타일 */
+.card {
+  width: 360px;
+  height: 400px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  padding: 50px 40px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  background: white;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  border-color: royalblue;
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(65, 105, 225, 0.15);
+}
+
+/* 카드 아이콘 */
+.card-icon {
+  font-size: 80px;
+  margin-bottom: 30px;
+}
+
+/* 카드 제목 */
+.card-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* 카드 설명 */
+.card-desc {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #767676;
+  margin-bottom: 40px;
+  flex-grow: 1;
+}
+
+/* 카드 하단 */
+.card-footer {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  width: 100%;
+  text-align: center;
+}
+
+.card-footer span {
+  color: royalblue;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.card:hover .card-footer span {
+  color: #3d5ab8;
+}
+
+/* 반응형 - 작은 화면 */
+@media (max-width: 1000px) {
+  .card-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+  
+  .card {
+    width: 90%;
+    max-width: 400px;
+  }
+  
+  .intro-container {
+    padding: 40px 20px;
+  }
+}

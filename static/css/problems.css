@@ -1,0 +1,213 @@
+/* 인기문제 페이지 스타일 */
+
+.popular-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.popular-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.popular-card {
+  display: flex;
+  gap: 20px;
+  padding: 24px;
+  background: white;
+  border: 2px solid #e8e8e8;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.popular-card:hover {
+  border-color: royalblue;
+  box-shadow: 0 4px 16px rgba(65, 105, 225, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Top 3 스타일 */
+.popular-card.rank-top {
+  border: 2px solid #ffd700;
+  background: linear-gradient(135deg, #fff9e6 0%, white 50%);
+}
+
+.popular-card.rank-top:hover {
+  border-color: #ffb700;
+  box-shadow: 0 4px 16px rgba(255, 215, 0, 0.25);
+}
+
+/* 랭킹 표시 */
+.popular-rank {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.rank-top .popular-rank {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  font-size: 28px;
+}
+
+.rank-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 문제 정보 */
+.popular-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.popular-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.problem-badge {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.problem-badge span {
+  padding: 6px 14px;
+  background: #f0f4ff;
+  color: royalblue;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.problem-difficulty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.difficulty-stars {
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.difficulty-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  padding: 4px 10px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+/* 문제 제목 */
+.popular-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* 통계 정보 */
+.popular-stats {
+  display: flex;
+  gap: 24px;
+  padding: 12px 0;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-icon {
+  font-size: 20px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 18px;
+  color: #e74c3c;
+  font-weight: 700;
+}
+
+/* 빈 상태 */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.empty-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+}
+
+.empty-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.empty-desc {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .popular-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .popular-rank {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  .rank-top .popular-rank {
+    font-size: 24px;
+  }
+
+  .popular-header {
+    justify-content: center;
+  }
+
+  .popular-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .popular-title {
+    font-size: 16px;
+  }
+}

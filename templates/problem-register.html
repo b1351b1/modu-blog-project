@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>문제 등록 - 영어교육용 블로그</title>
+  <link rel="stylesheet" href="/static/css/common.css">
+  <link rel="stylesheet" href="/static/css/table.css">
+  <link rel="stylesheet" href="/static/css/problem-register.css">
+</head>
+
+<body>
+  <!-- header -->
+  <div class="header">
+    <h1><a href="/">영어교육용 블로그</a></h1>
+    <div class="header-click">
+      <span id="user-nickname" style="margin-right: 10px; font-weight: 600;"></span>
+      <a href="/templates/index.html">게시판</a>
+      <a href="/templates/popular-problems.html">인기문제</a>
+      <button type="button" id="logout-btn">로그아웃</button>
+    </div>
+  </div>
+  <!-- // header -->
+
+  <div class="main">
+    <h2 class="main-title">문제 등록</h2>
+    <p class="main-desc">영어 기출 문제를 등록하세요. <span style="color: #999; font-size: 14px;">(관리자 전용)</span></p>
+
+    <form id="problem-register-form">
+      <table class="table problem-register">
+        <colgroup>
+          <col style="width: 120px">
+          <col>
+        </colgroup>
+        <tbody>
+          <tr>
+            <th><label for="problem-year">연도 <span class="required">*</span></label></th>
+            <td>
+              <input type="number" id="problem-year" name="problemYear" placeholder="예: 2024" min="2000" max="2030" required>
+              <p class="field-desc">4자리 연도를 입력하세요.</p>
+            </td>
+          </tr>
+          <tr>
+            <th><label for="problem-month">월 <span class="required">*</span></label></th>
+            <td>
+              <select id="problem-month" name="problemMonth" required>
+                <option value="">월을 선택하세요</option>
+                <option value="3">3월</option>
+                <option value="6">6월</option>
+                <option value="9">9월</option>
+                <option value="11">11월</option>
+              </select>
+              <p class="field-desc">3월, 6월, 9월, 11월 중 선택하세요.</p>
+            </td>
+          </tr>
+          <tr>
+            <th><label for="problem-number">문제 번호 <span class="required">*</span></label></th>
+            <td>
+              <input type="number" id="problem-number" name="problemNumber" placeholder="예: 31" min="1" max="50" required>
+              <p class="field-desc">문제 번호를 입력하세요.</p>
+            </td>
+          </tr>
+          <tr>
+            <th><label for="problem-title">제목 <span class="required">*</span></label></th>
+            <td>
+              <input type="text" id="problem-title" name="problemTitle" placeholder="예: 2024년 6월 모의평가 영어 31번" required>
+            </td>
+          </tr>
+          <tr>
+            <th><label for="problem-difficulty">난이도 <span class="required">*</span></label></th>
+            <td>
+              <select id="problem-difficulty" name="problemDifficulty" required>
+                <option value="">난이도를 선택하세요</option>
+                <option value="상">상</option>
+                <option value="중">중</option>
+                <option value="하">하</option>
+              </select>
+              <p class="field-desc">상 / 중 / 하 중 선택하세요.</p>
+            </td>
+          </tr>
+          <tr>
+            <th><label for="problem-file">파일 업로드 <span class="required">*</span></label></th>
+            <td>
+              <input type="file" id="problem-file" name="problemFile" accept=".hwp,.pdf,.png,.jpg,.jpeg" required>
+              <p class="field-desc">한글(HWP), PDF, PNG, JPG 파일만 업로드 가능합니다.</p>
+              <div id="file-preview" style="display: none;">
+                <p class="preview-label">선택된 파일:</p>
+                <p class="file-name" id="file-name"></p>
+                <button type="button" id="remove-file" class="btn-remove">파일 삭제</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="btn-group">
+        <a href="/templates/index.html" class="btn">취소</a>
+        <button type="submit" class="btn btn-primary">등록하기</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- footer -->
+  <p class="footer">Copyright 2025. 영어교육용 블로그 All rights reserved.</p>
+  <!-- //footer -->
+
+  <script>
+    const API_BASE_URL = 'http://localhost:8000';
+
+    // 페이지 로드 시 권한 확인
+    window.addEventListener('DOMContentLoaded', function() {
+      checkAdminAccess();
+    });
+
+    // 관리자 권한 확인
+    function checkAdminAccess() {
+      const token = localStorage.getItem('access_token');
+      const userRole = localStorage.getItem('user_role');
+      const userNickname = localStorage.getItem('user_nickname');
+      
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      if (userRole !== 'admin') {
+        alert('관리자만 문제를 등록할 수 있습니다.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // 닉네임 표시
+      if (userNickname) {
+        document.getElementById('user-nickname').textContent = `${userNickname}님`;
+      }
+    }
+
+    // 로그아웃
+    document.getElementById('logout-btn').addEventListener('click', function() {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_role');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('user_nickname');
+      window.location.href = 'intro.html';
+    });
+
+    // 파일 선택 시 미리보기
+    document.getElementById('problem-file').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      
+      if (!file) {
+        return;
+      }
+      
+      // 파일 형식 검증
+      const allowedExtensions = ['.hwp', '.pdf', '.png', '.jpg', '.jpeg'];
+      const fileName = file.name.toLowerCase();
+      const isAllowed = allowedExtensions.some(ext => fileName.endsWith(ext));
+      
+      if (!isAllowed) {
+        alert('한글(HWP), PDF, PNG, JPG 파일만 업로드 가능합니다.');
+        e.target.value = '';
+        return;
+      }
+      
+      // 파일 크기 검증 (50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        alert('파일 크기는 50MB 이하여야 합니다.');
+        e.target.value = '';
+        return;
+      }
+      
+      // 파일 이름 표시
+      document.getElementById('file-name').textContent = file.name;
+      document.getElementById('file-preview').style.display = 'block';
+    });
+
+    // 파일 삭제 버튼
+    document.getElementById('remove-file').addEventListener('click', function() {
+      document.getElementById('problem-file').value = '';
+      document.getElementById('file-preview').style.display = 'none';
+      document.getElementById('file-name').textContent = '';
+    });
+
+    // 폼 제출
+    document.getElementById('problem-register-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const year = parseInt(document.getElementById('problem-year').value);
+      const month = parseInt(document.getElementById('problem-month').value);
+      const number = parseInt(document.getElementById('problem-number').value);
+      const title = document.getElementById('problem-title').value.trim();
+      const difficulty = document.getElementById('problem-difficulty').value;
+      const fileInput = document.getElementById('problem-file');
+      const file = fileInput.files[0];
+      
+      // 유효성 검사
+      if (!year || year < 2000 || year > 2030) {
+        alert('올바른 연도를 입력해주세요. (2000-2030)');
+        return;
+      }
+      
+      if (!month || ![3, 6, 9, 11].includes(month)) {
+        alert('월을 선택해주세요. (3월, 6월, 9월, 11월)');
+        return;
+      }
+      
+      if (!number || number < 1 || number > 50) {
+        alert('올바른 문제 번호를 입력해주세요. (1-50)');
+        return;
+      }
+      
+      if (!title || title.length < 2) {
+        alert('제목은 2자 이상이어야 합니다.');
+        return;
+      }
+      
+      if (!difficulty) {
+        alert('난이도를 선택해주세요.');
+        return;
+      }
+      
+      if (!file) {
+        alert('파일을 선택해주세요.');
+        return;
+      }
+      
+      try {
+        // 버튼 비활성화
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = '등록 중...';
+        
+        // FormData 생성
+        const formData = new FormData();
+        formData.append('year', year);
+        formData.append('month', month);
+        formData.append('number', number);
+        formData.append('title', title);
+        formData.append('difficulty', difficulty);
+        formData.append('file', file);
+        
+        // API 호출
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(`${API_BASE_URL}/problems/admin/problems`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert('문제가 성공적으로 등록되었습니다!');
+          // 폼 초기화
+          document.getElementById('problem-register-form').reset();
+          document.getElementById('file-preview').style.display = 'none';
+        } else {
+          throw new Error(data.detail || '문제 등록에 실패했습니다.');
+        }
+        
+        // 버튼 다시 활성화
+        submitBtn.disabled = false;
+        submitBtn.textContent = '등록하기';
+        
+      } catch (error) {
+        console.error('문제 등록 실패:', error);
+        alert('문제 등록 중 오류가 발생했습니다: ' + error.message);
+        
+        // 버튼 다시 활성화
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '등록하기';
+      }
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원가입 - 영어교육용 블로그</title>
+  <link rel="stylesheet" href="/static/css/common.css">
+  <link rel="stylesheet" href="/static/css/login-join.css">
+</head>
+
+<body>
+  <!-- header -->
+  <div class="header">
+    <h1><a href="/templates/intro.html">영어교육용 블로그</a></h1>
+    <div class="header-click">
+      <a href="/templates/login.html">로그인</a>
+      <a href="/templates/join.html">회원가입</a>
+      <button type="button" id="logout-btn" style="display: none;">로그아웃</button>
+    </div>
+  </div>
+  <!-- // header -->
+
+  <div class="main">
+    <div class="container">
+      <h2 class="title">회원가입</h2>
+      <p class="description">
+        원활한 서비스 이용을 위해 회원가입을 해주세요
+      </p>
+
+      <form class="login">
+        <div>
+          <label class="label-width" for="user-id">아이디</label>
+          <input type="text" id="user-id" name="userId" 
+                minlength="3" maxlength="50" required>
+        </div>
+        <div>
+          <label class="label-width" for="user-email">이메일</label>
+          <input type="email" id="user-email" name="userEmail" 
+                maxlength="255" required>
+        </div>
+        <div>
+          <label class="label-width" for="user-pw">비밀번호</label>
+          <input type="password" id="user-pw" name="userPw" 
+                minlength="4" maxlength="50" required>
+        </div>
+        <div>
+          <label class="label-width" for="user-nick">닉네임</label>
+          <input type="text" id="user-nick" name="userNick" 
+                minlength="2" maxlength="50" required>
+        </div>
+
+        <button class="submit-button" type="submit">회원가입</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <p class="footer">Copyright 2025. 영어교육용 블로그 All rights reserved.</p>
+  <!-- //footer -->
+
+  <script>
+    const API_BASE_URL = 'http://localhost:8000';
+    
+    document.querySelector('.login').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById('user-id').value;
+      const email = document.getElementById('user-email').value;
+      const password = document.getElementById('user-pw').value;
+      const nickname = document.getElementById('user-nick').value;
+      
+      // 입력값 검증
+      if (name.length < 3) {
+        alert('아이디는 3자 이상이어야 합니다.');
+        return;
+      }
+      
+      if (password.length < 4) {
+        alert('비밀번호는 4자 이상이어야 합니다.');
+        return;
+      }
+      
+      if (password.length > 50) {
+        alert('비밀번호는 최대 50자까지 입력 가능합니다.');
+        return;
+      }
+
+      if (nickname.length < 2) {
+        alert('닉네임은 2자 이상이어야 합니다.');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name, email, password, nickname })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert('회원가입 성공! 로그인 페이지로 이동합니다.');
+          window.location.href = 'login.html';
+        } else {
+          alert('회원가입 실패: ' + data.detail);
+        }
+      } catch (error) {
+        alert('회원가입 중 오류가 발생했습니다.');
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+
+</html>

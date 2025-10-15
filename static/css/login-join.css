@@ -1,0 +1,75 @@
+/* 로그인 - 회원가입 페이지 */
+.container {
+	width: 360px;
+	margin: 60px auto;
+}
+
+.title,
+.description {
+	text-align: center;
+}
+
+.description {
+	margin: 20px 0 40px 0;
+	color: #767676;
+}
+
+/* 로그인 & 회원가입 폼 */
+.login > div {
+	margin-bottom: 10px;
+	display: flex;
+	align-items: center;
+}
+
+.login > div:last-of-type {
+	margin: 20px 0;
+}
+
+.label-width {
+	display: inline-block;
+	width: 70px;
+	font-weight: 500;
+}
+
+.login input[type="text"],
+.login input[type="email"],
+.login input[type="password"] {
+	flex: 1;
+	height: 36px;
+	padding: 0 10px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font: inherit;
+}
+
+.login input[type="text"]:focus,
+.login input[type="email"]:focus,
+.login input[type="password"]:focus {
+	outline: none;
+	border-color: royalblue;
+}
+
+.login input[type="checkbox"] {
+	margin-right: 5px;
+}
+
+.submit-button {
+	width: 100%;
+	height: 40px;
+	background-color: royalblue;
+	color: white;
+	border-width: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+	background-color: #4169e1;
+}
+
+.submit-button:active {
+	background-color: #325bcc;
+}

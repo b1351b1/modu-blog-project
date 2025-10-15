@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>영어교육용 블로그</title>
+  <link rel="stylesheet" href="/static/css/common.css">
+  <link rel="stylesheet" href="/static/css/intro.css">
+</head>
+
+<body>
+  <!-- header -->
+  <div class="header">
+    <h1><a href="/">영어교육용 블로그</a></h1>
+    <div class="header-click">
+      <span id="user-nickname" style="margin-right: 10px; font-weight: 600; display: none;"></span>
+      <a href="/templates/mypage.html" id="mypage-link" style="display: none;">마이페이지</a>  <!-- 이 줄 추가 -->
+      <a href="/templates/login.html" id="login-link">로그인</a>
+      <a href="/templates/join.html" id="join-link">회원가입</a>
+      <button type="button" id="logout-btn" style="display: none;">로그아웃</button>
+    </div>
+  </div>
+  <!-- // header -->
+
+  <div class="main">
+    <div class="intro-container">
+      <h2 class="intro-title">원하는 서비스를 선택하세요</h2>
+      <p class="intro-desc">블로그 게시글을 읽거나 변형문제 생성 프로그램을 사용할 수 있습니다</p>
+
+      <div class="card-container">
+        <!-- 게시글 카드 -->
+        <a href="/templates/index.html" class="card">
+          <div class="card-icon">📰</div>
+          <h3 class="card-title">블로그 게시글</h3>
+          <p class="card-desc">
+            입시정보와 영어지식 게시글을<br>
+            확인하고 댓글을 남겨보세요
+          </p>
+          <div class="card-footer">
+            <span>게시글 보러가기 →</span>
+          </div>
+        </a>
+
+        <!-- 문제 선택 카드 -->
+        <a href="/templates/problem-select.html" class="card">
+          <div class="card-icon">📝</div>
+          <h3 class="card-title">문제 선택하기</h3>
+          <p class="card-desc">
+            영어 기출 문제를 선택하고<br>
+            나만의 변형문제를 만들어보세요
+          </p>
+          <div class="card-footer">
+            <span>문제 선택하러 가기 →</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <p class="footer">Copyright 2025. 영어교육용 블로그 All rights reserved.</p>
+  <!-- //footer -->
+
+  <script>
+    // 페이지 로드 시 로그인 상태 확인
+    window.addEventListener('DOMContentLoaded', function() {
+      checkLoginStatus();
+    });
+
+    // 로그인 상태 확인 및 헤더 업데이트
+    function checkLoginStatus() {
+      const token = localStorage.getItem('access_token');
+      const userNickname = localStorage.getItem('user_nickname');
+      
+      if (token && userNickname) {
+        // 로그인 상태 - 닉네임, 마이페이지, 로그아웃 버튼 표시
+        document.getElementById('user-nickname').textContent = `${userNickname}님`;
+        document.getElementById('user-nickname').style.display = 'inline';
+        document.getElementById('mypage-link').style.display = 'inline-block';  // 이 줄 추가
+        document.getElementById('logout-btn').style.display = 'inline-block';
+        document.getElementById('login-link').style.display = 'none';
+        document.getElementById('join-link').style.display = 'none';
+      } else {
+        // 비로그인 상태 - 로그인, 회원가입 링크 표시
+        document.getElementById('user-nickname').style.display = 'none';
+        document.getElementById('mypage-link').style.display = 'none';  // 이 줄 추가
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('login-link').style.display = 'inline-block';
+        document.getElementById('join-link').style.display = 'inline-block';
+      }
+    }
+    
+    // 로그아웃 버튼 클릭
+    document.getElementById('logout-btn').addEventListener('click', function() {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_role');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('user_nickname');
+      alert('로그아웃되었습니다.');
+      checkLoginStatus(); // 헤더 업데이트
+    });
+
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', function(e) {
+        const token = localStorage.getItem('access_token');
+        
+        if (!token) {
+          e.preventDefault();
+          alert('로그인이 필요한 서비스입니다.');
+          window.location.href = '/templates/login.html';
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>

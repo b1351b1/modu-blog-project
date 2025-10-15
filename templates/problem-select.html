@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>문제 선택 - 영어교육용 블로그</title>
+  <link rel="stylesheet" href="/static/css/common.css">
+  <link rel="stylesheet" href="/static/css/problem-select.css">
+</head>
+
+<body>
+  <!-- header -->
+  <div class="header">
+    <h1><a href="/">영어교육용 블로그</a></h1>
+    <div class="header-click">
+      <span id="user-nickname" style="margin-right: 10px; font-weight: 600;"></span>
+      <a href="/templates/index.html">게시판</a>
+      <a href="/templates/mypage.html">마이페이지</a>
+      <a href="/templates/problem-register.html" id="problem-register-link" style="display: none;">문제 등록</a>
+      <button type="button" id="logout-btn">로그아웃</button>
+    </div>
+  </div>
+  <!-- // header -->
+
+  <div class="main">
+    <h2 class="main-title">문제 선택하기</h2>
+    <p class="main-desc">영어 기출 문제를 선택하여 내 문제 목록에 추가하세요</p>
+
+    <div class="problem-select-container">
+      <!-- 선택 영역 -->
+      <div class="select-section">
+        <div class="select-group">
+          <label for="year-select">📅 연도 선택</label>
+          <select id="year-select">
+            <option value="">연도를 선택하세요</option>
+          </select>
+        </div>
+
+        <div class="select-group">
+          <label for="month-select">📆 월 선택</label>
+          <select id="month-select" disabled>
+            <option value="">먼저 연도를 선택하세요</option>
+          </select>
+        </div>
+
+        <div class="select-group">
+          <label for="number-select">🔢 문제 번호 선택</label>
+          <select id="number-select" disabled>
+            <option value="">먼저 월을 선택하세요</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 문제 정보 표시 영역 -->
+      <div class="problem-info" id="problem-info" style="display: none;">
+        <div class="problem-card">
+          <div class="problem-icon">📝</div>
+          <h3 class="problem-title" id="problem-title"></h3>
+          <div class="problem-difficulty" id="problem-difficulty"></div>
+          <button type="button" class="btn btn-primary" id="add-problem-btn">
+            내 문제 목록에 추가하기
+          </button>
+        </div>
+      </div>
+
+      <!-- 로딩 메시지 -->
+      <div class="loading-message" id="loading-message" style="display: none;">
+        <p>문제를 불러오는 중...</p>
+      </div>
+
+      <!-- 에러 메시지 -->
+      <div class="error-message" id="error-message" style="display: none;">
+        <p>문제를 불러오는데 실패했습니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <p class="footer">Copyright 2025. 영어교육용 블로그 All rights reserved.</p>
+  <!-- //footer -->
+
+  <script>
+    const API_BASE_URL = 'http://localhost:8000';
+    let selectedProblem = null;
+    let allProblems = [];
+
+    // 로그인 상태 확인
+    function checkLoginStatus() {
+      const token = localStorage.getItem('access_token');
+      const userRole = localStorage.getItem('user_role');
+      const userNickname = localStorage.getItem('user_nickname');
+      
+      if (token && userNickname) {
+        // 닉네임 표시
+        document.getElementById('user-nickname').textContent = `${userNickname}님`;
+        
+        // 관리자인 경우 문제 등록 링크 표시
+        if (userRole === 'admin') {
+          document.getElementById('problem-register-link').style.display = 'inline-block';
+        }
+      }
+    }
+    
+    // 로그아웃
+    document.getElementById('logout-btn').addEventListener('click', function() {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_role');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('user_nickname');
+      window.location.href = 'intro.html';
+    });
+
+    // 페이지 로드 시 연도 목록 불러오기
+    async function loadYears() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/problems/?limit=1000`);
+        const data = await response.json();
+        
+        if (response.ok && data.problems.length > 0) {
+          allProblems = data.problems;
+          
+          // 유니크한 연도 추출 및 정렬
+          const years = [...new Set(data.problems.map(p => p.year))].sort((a, b) => b - a);
+          
+          const yearSelect = document.getElementById('year-select');
+          years.forEach(year => {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = `${year}년`;
+            yearSelect.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('연도 목록 불러오기 실패:', error);
+        showError();
+      }
+    }
+
+    // 연도 선택 시 월 목록 업데이트
+    document.getElementById('year-select').addEventListener('change', function() {
+      const year = parseInt(this.value);
+      const monthSelect = document.getElementById('month-select');
+      const numberSelect = document.getElementById('number-select');
+      
+      // 초기화
+      monthSelect.innerHTML = '<option value="">월을 선택하세요</option>';
+      numberSelect.innerHTML = '<option value="">먼저 월을 선택하세요</option>';
+      numberSelect.disabled = true;
+      hideProblemInfo();
+      
+      if (!year) {
+        monthSelect.disabled = true;
+        return;
+      }
+      
+      // 해당 연도의 월 추출
+      const months = [...new Set(
+        allProblems
+          .filter(p => p.year === year)
+          .map(p => p.month)
+      )].sort((a, b) => a - b);
+      
+      months.forEach(month => {
+        const option = document.createElement('option');
+        option.value = month;
+        option.textContent = `${month}월`;
+        monthSelect.appendChild(option);
+      });
+      
+      monthSelect.disabled = false;
+    });
+
+    // 월 선택 시 문제 번호 목록 업데이트
+    document.getElementById('month-select').addEventListener('change', function() {
+      const year = parseInt(document.getElementById('year-select').value);
+      const month = parseInt(this.value);
+      const numberSelect = document.getElementById('number-select');
+      
+      // 초기화
+      numberSelect.innerHTML = '<option value="">문제 번호를 선택하세요</option>';
+      hideProblemInfo();
+      
+      if (!month) {
+        numberSelect.disabled = true;
+        return;
+      }
+      
+      // 해당 연도, 월의 문제 번호 추출
+      const numbers = allProblems
+        .filter(p => p.year === year && p.month === month)
+        .map(p => ({ number: p.number, problem_id: p.problem_id }))
+        .sort((a, b) => a.number - b.number);
+      
+      numbers.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.problem_id;
+        option.textContent = `${item.number}번`;
+        numberSelect.appendChild(option);
+      });
+      
+      numberSelect.disabled = false;
+    });
+
+    // 문제 번호 선택 시 문제 정보 표시
+    document.getElementById('number-select').addEventListener('change', function() {
+      const problemId = parseInt(this.value);
+      
+      if (!problemId) {
+        hideProblemInfo();
+        return;
+      }
+      
+      const problem = allProblems.find(p => p.problem_id === problemId);
+      
+      if (problem) {
+        selectedProblem = problem;
+        displayProblemInfo(problem);
+      }
+    });
+
+    // 문제 정보 표시
+    function displayProblemInfo(problem) {
+      document.getElementById('problem-title').textContent = problem.title;
+      
+      // 난이도 표시
+      const difficultyDiv = document.getElementById('problem-difficulty');
+      const difficultyText = problem.difficulty || '중';
+      const stars = getDifficultyStars(difficultyText);
+      
+      difficultyDiv.innerHTML = `
+        <span class="difficulty-label">난이도:</span>
+        <span class="difficulty-stars">${stars}</span>
+        <span class="difficulty-text">(${difficultyText})</span>
+      `;
+      
+      document.getElementById('problem-info').style.display = 'block';
+      document.getElementById('loading-message').style.display = 'none';
+      document.getElementById('error-message').style.display = 'none';
+    }
+
+    // 난이도에 따른 별 개수 반환
+    function getDifficultyStars(difficulty) {
+      const starMap = {
+        '상': '⭐⭐⭐',
+        '중': '⭐⭐',
+        '하': '⭐'
+      };
+      return starMap[difficulty] || '⭐⭐';
+    }
+
+    // 문제 정보 숨기기
+    function hideProblemInfo() {
+      document.getElementById('problem-info').style.display = 'none';
+      selectedProblem = null;
+    }
+
+    // 에러 메시지 표시
+    function showError() {
+      document.getElementById('error-message').style.display = 'block';
+      document.getElementById('loading-message').style.display = 'none';
+      document.getElementById('problem-info').style.display = 'none';
+    }
+
+    // 문제 추가 버튼 클릭
+    document.getElementById('add-problem-btn').addEventListener('click', async function() {
+      const token = localStorage.getItem('access_token');
+      
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      if (!selectedProblem) {
+        alert('문제를 선택해주세요.');
+        return;
+      }
+      
+      try {
+        const button = this;
+        button.disabled = true;
+        button.textContent = '추가 중...';
+        
+        const response = await fetch(`${API_BASE_URL}/problems/my`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ problem_id: selectedProblem.problem_id })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert('문제가 내 문제 목록에 추가되었습니다!');
+          
+          // 선택 초기화
+          document.getElementById('year-select').value = '';
+          document.getElementById('month-select').innerHTML = '<option value="">먼저 연도를 선택하세요</option>';
+          document.getElementById('month-select').disabled = true;
+          document.getElementById('number-select').innerHTML = '<option value="">먼저 월을 선택하세요</option>';
+          document.getElementById('number-select').disabled = true;
+          hideProblemInfo();
+          
+        } else {
+          if (response.status === 400 && data.detail.includes('already')) {
+            alert('이미 추가한 문제입니다.');
+          } else {
+            alert('문제 추가 실패: ' + data.detail);
+          }
+        }
+        
+        button.disabled = false;
+        button.textContent = '내 문제 목록에 추가하기';
+        
+      } catch (error) {
+        console.error('문제 추가 중 오류:', error);
+        alert('문제를 추가하는 중 오류가 발생했습니다.');
+        
+        const button = document.getElementById('add-problem-btn');
+        button.disabled = false;
+        button.textContent = '내 문제 목록에 추가하기';
+      }
+    });
+
+    // 초기 로드
+    checkLoginStatus();
+    loadYears();
+  </script>
+</body>
+
+</html>

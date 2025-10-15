@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>인기문제 Top 10 - 영어교육용 블로그</title>
+  <link rel="stylesheet" href="/static/css/common.css">
+  <link rel="stylesheet" href="/static/css/problems.css">
+</head>
+
+<body>
+  <!-- header -->
+  <div class="header">
+    <h1><a href="/">영어교육용 블로그</a></h1>
+    <div class="header-click">
+      <span id="user-nickname" style="margin-right: 10px; font-weight: 600;"></span>
+      <a href="/templates/index.html">게시판</a>
+      <a href="/templates/problem-register.html">문제등록</a>
+      <a href="/templates/popular-problems.html" id="popular-link" style="display: none;">인기문제</a>
+      <button type="button" id="logout-btn">로그아웃</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <h2 class="main-title">📊 인기문제 Top 10</h2>
+    <p class="main-desc">가장 많이 선택된 문제를 확인하세요 (관리자 전용)</p>
+
+    <!-- 로딩 -->
+    <div id="loading" style="text-align: center; padding: 60px 20px;">
+      <p style="color: #999;">인기문제를 불러오는 중...</p>
+    </div>
+
+    <!-- 인기문제 목록 -->
+    <div class="popular-container" id="popular-container" style="display: none;">
+      <div class="popular-list" id="popular-list">
+        <!-- JavaScript로 동적 생성 -->
+      </div>
+    </div>
+
+    <!-- 빈 상태 -->
+    <div class="empty-state" id="empty-state" style="display: none;">
+      <div class="empty-icon">📭</div>
+      <h3 class="empty-title">아직 선택된 문제가 없습니다</h3>
+      <p class="empty-desc">
+        사용자들이 문제를 선택하면 여기에 인기문제가 표시됩니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <p class="footer">Copyright 2025. 영어교육용 블로그 All rights reserved.</p>
+  <!-- //footer -->
+
+  <script>
+    const API_BASE_URL = 'http://localhost:8000';
+
+    // 페이지 로드 시 관리자 권한 확인 및 인기문제 로드
+    window.addEventListener('DOMContentLoaded', function() {
+      checkAdminAndLoadPopular();
+    });
+
+    // 관리자 확인 및 인기문제 로드
+    async function checkAdminAndLoadPopular() {
+      const token = localStorage.getItem('access_token');
+      const userRole = localStorage.getItem('user_role');
+      const userNickname = localStorage.getItem('user_nickname');
+      
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      if (userRole !== 'admin') {
+        alert('관리자만 접근할 수 있습니다.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // 닉네임 표시
+      if (userNickname) {
+        document.getElementById('user-nickname').textContent = `${userNickname}님`;
+      }
+      
+      // 인기문제 로드
+      await loadPopularProblems();
+    }
+
+    // 인기문제 로드
+    async function loadPopularProblems() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/problems/popular`);
+        const data = await response.json();
+        
+        // 로딩 숨기기
+        document.getElementById('loading').style.display = 'none';
+        
+        if (response.ok && data.popular_problems && data.popular_problems.length > 0) {
+          displayPopularProblems(data.popular_problems);
+          document.getElementById('popular-container').style.display = 'block';
+        } else {
+          document.getElementById('empty-state').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('인기문제 로드 중 오류:', error);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'block';
+      }
+    }
+
+    // 인기문제 표시
+    function displayPopularProblems(problems) {
+      const listContainer = document.getElementById('popular-list');
+      
+      const html = problems.map((item, index) => {
+        const rank = index + 1;
+        const rankClass = rank <= 3 ? 'rank-top' : '';
+        const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+        const difficultyStars = getDifficultyStars(item.difficulty);
+        
+        return `
+          <div class="popular-card ${rankClass}">
+            <div class="popular-rank">
+              <span class="rank-number">${rankEmoji || rank}</span>
+            </div>
+            <div class="popular-info">
+              <div class="popular-header">
+                <div class="problem-badge">
+                  <span>${item.year}년 ${item.month}월</span>
+                  <span>${item.number}번</span>
+                </div>
+                <div class="problem-difficulty">
+                  <span class="difficulty-stars">${difficultyStars}</span>
+                  <span class="difficulty-text">${item.difficulty}</span>
+                </div>
+              </div>
+              <h3 class="popular-title">${item.title}</h3>
+              <div class="popular-stats">
+                <div class="stat-item">
+                  <span class="stat-icon">🔥</span>
+                  <span class="stat-label">선택 횟수:</span>
+                  <span class="stat-value">${item.selection_count}회</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      listContainer.innerHTML = html;
+    }
+
+    // 난이도에 따른 별 개수 반환
+    function getDifficultyStars(difficulty) {
+      const starMap = {
+        '상': '⭐⭐⭐',
+        '중': '⭐⭐',
+        '하': '⭐'
+      };
+      return starMap[difficulty] || '⭐⭐';
+    }
+
+    // 로그아웃
+    document.getElementById('logout-btn').addEventListener('click', function() {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_role');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('user_nickname');
+      window.location.href = 'intro.html';
+    });
+  </script>
+</body>
+
+</html>

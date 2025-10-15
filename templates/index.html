@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>블로그 게시판</title>
+  <link rel="stylesheet" href="/static/css/common.css">
+  <link rel="stylesheet" href="/static/css/table.css">
+  <link rel="stylesheet" href="/static/css/list.css">
+</head>
+
+<body>
+  <!-- header -->
+  <div class="header">
+    <h1><a href="/templates/intro.html">영어교육용 블로그</a></h1>
+    <div class="header-click">
+      <span id="user-nickname" style="margin-right: 10px; font-weight: 600; display: none;"></span>
+      <a href="/templates/problem-select.html" id="problem-select-link" style="display: none;">문제 선택</a>
+      <a href="/templates/problem-register.html" id="problem-register-link" style="display: none;">문제 등록</a>
+      <a href="/templates/mypage.html" id="mypage-link" style="display: none;">마이페이지</a>
+      <a href="/templates/login.html" id="login-link">로그인</a>
+      <a href="/templates/join.html" id="join-link">회원가입</a>
+      <button type="button" id="logout-btn" style="display: none;">로그아웃</button>
+    </div>
+  </div>
+  <!-- // header -->
+
+  <div class="main">
+    <h2 class="main-title">게시판</h2>
+
+    <div class="board-top">
+      <p class="main-desc"><strong id="total-count">0개</strong>의 게시글이 있습니다.</p>
+
+      <div>
+        <label for="category" class="a11y-hidden">카테고리</label>
+        <select id="category">
+          <option value="">전체</option>
+          <option value="입시정보">입시정보</option>
+          <option value="영어지식">영어지식</option>
+        </select>
+        
+        <form class="search-form" id="search-form">
+          <label for="search" class="a11y-hidden">검색</label>
+          <input id="search" type="search" placeholder="검색어를 입력해주세요">
+          <button type="submit">
+            <img src="/static/img/icon-search.png" alt="검색">
+          </button>
+        </form>
+
+        <label for="sort" class="a11y-hidden">정렬</label>
+        <select id="sort">
+          <option value="desc">최신순</option>
+          <option value="asc">오래된순</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 게시판 리스트 -->
+    <table class="table list">
+      <colgroup>
+        <col style="width: 40px">
+        <col style="width: 60px">
+        <col style="width: 100px">
+        <col>
+        <col style="width: 100px">
+        <col style="width: 120px">
+        <col style="width: 100px">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>
+            <input type="checkbox" id="all-article">
+          </th>
+          <th>번호</th>
+          <th>카테고리</th>
+          <th>제목</th>
+          <th>작성자</th>
+          <th>작성일</th>
+          <th>조회수</th>
+        </tr>
+      </thead>
+      <tbody id="post-list">
+        <tr>
+          <td class="nodata" colspan="7">게시글을 불러오는 중...</td>
+        </tr>
+      </tbody>
+    </table>
+    <!-- //게시판 리스트 -->
+
+    <div class="board-bottom">
+      <!-- 페이지 -->
+      <div class="pagination" id="pagination">
+        <!-- JavaScript로 동적 생성 -->
+      </div>
+      <!-- //페이지 -->
+      <div class="btn-group">
+        <button class="btn" id="delete-selected-btn" style="display: none;">선택삭제</button>
+        <a href="/templates/write.html" class="btn" id="write-btn" style="display: none;">글쓰기</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <p class="footer">Copyright 2025. 영어교육용 블로그 All rights reserved.</p>
+  <!-- //footer -->
+
+  <script>
+    const API_BASE_URL = 'http://localhost:8000';
+    let currentPage = 1;
+    let currentCategory = '';
+    let currentSearch = '';
+    let currentSort = 'desc';
+    let isAdmin = false;
+
+    // 로그인 상태 확인
+    function checkLoginStatus() {
+      const token = localStorage.getItem('access_token');
+      const userRole = localStorage.getItem('user_role');
+      const userNickname = localStorage.getItem('user_nickname');
+      
+      if (token && userNickname) {
+        // 공통: 닉네임, 마이페이지, 로그아웃 표시
+        document.getElementById('user-nickname').textContent = `${userNickname}님`;
+        document.getElementById('user-nickname').style.display = 'inline';
+        document.getElementById('mypage-link').style.display = 'inline-block';
+        document.getElementById('logout-btn').style.display = 'inline-block';
+        document.getElementById('login-link').style.display = 'none';
+        document.getElementById('join-link').style.display = 'none';
+        
+        // 역할별 메뉴 구분
+        if (userRole === 'admin') {
+          // 관리자
+          isAdmin = true;
+          document.getElementById('problem-register-link').style.display = 'inline-block';
+          document.getElementById('problem-select-link').style.display = 'none';
+          document.getElementById('write-btn').style.display = 'inline-flex';
+          document.getElementById('delete-selected-btn').style.display = 'inline-flex';
+          
+          // 체크박스 컬럼 보이기
+          showCheckboxColumn();
+        } else {
+          // 일반 사용자
+          isAdmin = false;
+          document.getElementById('problem-select-link').style.display = 'inline-block';
+          document.getElementById('problem-register-link').style.display = 'none';
+          document.getElementById('write-btn').style.display = 'none';
+          document.getElementById('delete-selected-btn').style.display = 'none';
+          
+          // 체크박스 컬럼 숨기기
+          hideCheckboxColumn();
+        }
+      } else {
+        // 비로그인 상태
+        isAdmin = false;
+        document.getElementById('user-nickname').style.display = 'none';
+        document.getElementById('mypage-link').style.display = 'none';
+        document.getElementById('problem-select-link').style.display = 'none';
+        document.getElementById('problem-register-link').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('login-link').style.display = 'inline-block';
+        document.getElementById('join-link').style.display = 'inline-block';
+        document.getElementById('write-btn').style.display = 'none';
+        document.getElementById('delete-selected-btn').style.display = 'none';
+        
+        // 체크박스 컬럼 숨기기
+        hideCheckboxColumn();
+      }
+    }
+
+    // 체크박스 컬럼 보이기
+    function showCheckboxColumn() {
+      const checkboxCol = document.querySelector('.table colgroup col:first-child');
+      const checkboxTh = document.querySelector('.table thead th:first-child');
+      
+      if (checkboxCol) checkboxCol.style.display = '';
+      if (checkboxTh) checkboxTh.style.display = '';
+    }
+
+    // 체크박스 컬럼 숨기기
+    function hideCheckboxColumn() {
+      const checkboxCol = document.querySelector('.table colgroup col:first-child');
+      const checkboxTh = document.querySelector('.table thead th:first-child');
+      
+      if (checkboxCol) checkboxCol.style.display = 'none';
+      if (checkboxTh) checkboxTh.style.display = 'none';
+    }
+
+    // 로그아웃
+    document.getElementById('logout-btn').addEventListener('click', function() {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_role');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('user_nickname');
+      window.location.href = 'intro.html';
+    });
+
+    // 전체 선택 체크박스
+    document.getElementById('all-article').addEventListener('change', function() {
+      const checkboxes = document.querySelectorAll('#post-list input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+      });
+    });
+
+    // 게시글 목록 불러오기 (태그 기능 추가)
+    async function loadPosts() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tag = urlParams.get('tag');
+        
+        let url;
+        
+        if (tag) {
+          url = `${API_BASE_URL}/blog/tags/${encodeURIComponent(tag)}?page=${currentPage}&limit=10&sort=${currentSort}`;
+        } else {
+          url = `${API_BASE_URL}/blog?page=${currentPage}&limit=10&sort=${currentSort}`;
+          
+          if (currentCategory) {
+            url += `&category=${currentCategory}`;
+          }
+          
+          if (currentSearch) {
+            url += `&search=${currentSearch}`;
+          }
+        }
+        
+        console.log('요청 URL:', url); // 디버깅용
+        
+        const response = await fetch(url);
+        
+        // 응답 체크 추가!
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('API 에러:', errorData);
+          throw new Error(errorData.detail || '서버 오류');
+        }
+        
+        const data = await response.json();
+        console.log('응답 데이터:', data); // 디버깅용
+        
+        const totalCount = document.getElementById('total-count');
+        const mainDesc = document.querySelector('.main-desc');
+        
+        if (tag) {
+          mainDesc.innerHTML = 
+            `<strong>#${tag}</strong> 태그의 게시글 <strong>${data.total}개</strong> 
+            <a href="index.html" style="margin-left: 10px; font-size: 14px;">[전체보기]</a>`;
+        } else {
+          totalCount.textContent = `${data.total}개`;
+        }
+        
+        displayPosts(data.posts, data.total);
+        displayPagination(data.total, data.page, data.limit);
+        
+      } catch (error) {
+        console.error('게시글 불러오기 실패:', error);
+        const colspan = isAdmin ? 7 : 6;
+        document.getElementById('post-list').innerHTML = 
+          `<tr><td class="nodata" colspan="${colspan}">게시글을 불러오는데 실패했습니다: ${error.message}</td></tr>`;
+      }
+    }
+
+    // 게시글 표시
+    function displayPosts(posts, total) {
+      const postList = document.getElementById('post-list');
+      const totalCount = document.getElementById('total-count');
+      
+      // totalCount 요소가 있을 때만 업데이트 (태그 필터링 시에는 없을 수 있음)
+      if (totalCount) {
+        totalCount.textContent = `${total}개`;
+      }
+      
+      if (posts.length === 0) {
+        const colspan = isAdmin ? 7 : 6;
+        postList.innerHTML = `<tr><td class="nodata" colspan="${colspan}">등록된 게시물이 없습니다.</td></tr>`;
+        return;
+      }
+      
+      postList.innerHTML = posts.map((post, index) => {
+        const postNumber = total - ((currentPage - 1) * 10 + index);
+        const date = new Date(post.created_at).toLocaleDateString('ko-KR');
+        const viewCount = post.view_count || 0;
+        
+        return `
+          <tr>
+            ${isAdmin ? `<td><input type="checkbox" class="post-checkbox" data-post-id="${post.id}"></td>` : ''}
+            <td>${postNumber}</td>
+            <td>${post.category}</td>
+            <td>
+              <a href="/templates/view.html?id=${post.id}">${post.title}</a>
+            </td>
+            <td>${post.author.nickname}</td>
+            <td>${date}</td>
+            <td>${viewCount}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 페이지네이션 표시
+    function displayPagination(total, page, limit) {
+      const pagination = document.getElementById('pagination');
+      const totalPages = Math.ceil(total / limit);
+      
+      if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+      }
+      
+      let html = '';
+      
+      // 첫 페이지
+      if (page > 1) {
+        html += `<a href="#" onclick="changePage(1); return false;"><img src="/static/img/first.png" alt="첫번째 페이지"></a>`;
+        html += `<a href="#" onclick="changePage(${page - 1}); return false;"><img src="/static/img/prev.png" alt="이전 페이지"></a>`;
+      }
+      
+      // 페이지 번호 (현재 페이지 기준 ±2)
+      const startPage = Math.max(1, page - 2);
+      const endPage = Math.min(totalPages, page + 2);
+      
+      for (let i = startPage; i <= endPage; i++) {
+        const activeClass = i === page ? 'active' : '';
+        html += `<a href="#" class="num ${activeClass}" onclick="changePage(${i}); return false;">${i}</a>`;
+      }
+      
+      // 마지막 페이지
+      if (page < totalPages) {
+        html += `<a href="#" onclick="changePage(${page + 1}); return false;"><img src="/static/img/next.png" alt="다음 페이지"></a>`;
+        html += `<a href="#" onclick="changePage(${totalPages}); return false;"><img src="/static/img/last.png" alt="마지막 페이지"></a>`;
+      }
+      
+      pagination.innerHTML = html;
+    }
+
+    // 페이지 변경
+    function changePage(page) {
+      currentPage = page;
+      loadPosts();
+      window.scrollTo(0, 0);
+    }
+
+    // 카테고리 변경
+    document.getElementById('category').addEventListener('change', function() {
+      currentCategory = this.value;
+      currentPage = 1;
+      loadPosts();
+    });
+
+    // 정렬 변경
+    document.getElementById('sort').addEventListener('change', function() {
+      currentSort = this.value;
+      currentPage = 1;
+      loadPosts();
+    });
+
+    // 검색
+    document.getElementById('search-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      currentSearch = document.getElementById('search').value.trim();
+      currentPage = 1;
+      loadPosts();
+    });
+
+    // 선택 삭제
+    document.getElementById('delete-selected-btn').addEventListener('click', async function() {
+      const token = localStorage.getItem('access_token');
+      
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      const checkboxes = document.querySelectorAll('.post-checkbox:checked');
+      
+      if (checkboxes.length === 0) {
+        alert('삭제할 게시글을 선택해주세요.');
+        return;
+      }
+      
+      if (!confirm(`선택한 ${checkboxes.length}개의 게시글을 삭제하시겠습니까?`)) {
+        return;
+      }
+      
+      const postIds = Array.from(checkboxes).map(cb => parseInt(cb.dataset.postId));
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/blog/delete-multiple`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ post_ids: postIds })
+        });
+        
+        if (response.ok) {
+          alert('선택한 게시글이 삭제되었습니다.');
+          document.getElementById('all-article').checked = false;
+          loadPosts();
+        } else {
+          const data = await response.json();
+          alert('삭제 실패: ' + data.detail);
+        }
+      } catch (error) {
+        console.error('삭제 중 오류:', error);
+        alert('게시글 삭제 중 오류가 발생했습니다: ' + error.message);
+      }
+    });
+
+    // 초기 로드
+    checkLoginStatus();
+    loadPosts();
+
+  </script>
+</body>
+
+</html>
