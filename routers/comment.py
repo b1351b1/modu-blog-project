@@ -156,7 +156,31 @@ def delete_comment(
     comment = get_comment_check(db, post_id, comment_id)
     check_comment_author(comment, current_user)
     
-    # 대댓글 개수 확인
+    # 🔹 이 댓글이 대댓글인 경우 (parent_comment_id가 있음)
+    if comment.parent_comment_id is not None:
+        parent_comment = db.query(Comment).filter(
+            Comment.comment_id == comment.parent_comment_id
+        ).first()
+        
+        # 대댓글 삭제
+        db.delete(comment)
+        db.commit()
+        
+        # 부모 댓글이 "삭제된 댓글입니다"인지 확인
+        if parent_comment and parent_comment.content == "삭제된 댓글입니다":
+            # 부모 댓글의 남은 대댓글 개수 확인
+            remaining_replies = db.query(Comment).filter(
+                Comment.parent_comment_id == parent_comment.comment_id
+            ).count()
+            
+            # 🔹 남은 대댓글이 없으면 부모 댓글도 삭제
+            if remaining_replies == 0:
+                db.delete(parent_comment)
+                db.commit()
+        
+        return {"message": "댓글이 삭제되었습니다"}
+    
+    # 🔹 이 댓글이 최상위 댓글인 경우 (기존 로직 유지)
     replies_count = db.query(Comment).filter(
         Comment.parent_comment_id == comment_id
     ).count()
@@ -166,7 +190,7 @@ def delete_comment(
         comment.content = "삭제된 댓글입니다"
         comment.updated_at = datetime.now()
         db.commit()
-        return {"message": " 이 댓글은 삭제되어 더 이상 볼 수 없습니다."}
+        return {"message": "이 댓글은 삭제되어 더 이상 볼 수 없습니다."}
     else:
         # 대댓글이 없으면 완전 삭제
         db.delete(comment)
