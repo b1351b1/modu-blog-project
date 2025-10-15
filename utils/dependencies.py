@@ -15,16 +15,20 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def create_token(user_id: int):
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    token_data = {"sub": user_id, "exp": expire}
+    token_data = {"sub": str(user_id), "exp": expire}
     return jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
 
 # JWT 토큰 검증 dependency
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = payload.get("sub")
-        if user_id is None:
+        user_id_str = payload.get("sub")
+        
+        if user_id_str is None:
             raise HTTPException(status_code=401, detail="토큰이 유효하지 않습니다.")
+        
+        # 문자열을 다시 정수로 변환
+        user_id = int(user_id_str)
         
         # DB에서 사용자 조회
         user = db.query(User).filter(User.user_id == user_id).first()
