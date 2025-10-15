@@ -141,7 +141,6 @@ def create_post(
    
     # 현재 시간
     now = datetime.now()
-    created_at = now.strftime("%Y-%m-%d %H:%M:%S")
     
     # 게시글 생성
     new_post = Post(
@@ -149,8 +148,8 @@ def create_post(
         title=post_data.title,
         content=post_data.content,
         category=post_data.category.value,
-        created_at=created_at,
-        updated_at=created_at
+        created_at=now,
+        updated_at=now
     )
     
     if post_data.image_url and hasattr(new_post, 'image_url'):
@@ -162,7 +161,7 @@ def create_post(
     
     # 태그 처리
     if post_data.tags:
-        handle_tags(db, new_post, post_data.tags, created_at)
+        handle_tags(db, new_post, post_data.tags, now)
         db.commit()
         db.refresh(new_post)
     
@@ -321,14 +320,14 @@ def update_post(
         
     # 수정 시간 업데이트
     now = datetime.now()
-    post.updated_at = now.strftime("%Y-%m-%d %H:%M:%S")
+    post.updated_at = now
     
     # 항상 기존 태그 연결 삭제
     db.query(PostTag).filter(PostTag.post_id == post.post_id).delete()
     
     # 새로운 태그 추가 
     if post_data.tags:
-        handle_tags(db, post, post_data.tags, post.updated_at)
+        handle_tags(db, post, post_data.tags, now)
     
     db.commit()
     db.refresh(post)
@@ -338,23 +337,6 @@ def update_post(
 
 
 # ===== 6. 게시글 삭제 =====
-
-@router.delete("/{post_id}")
-def delete_post(
-    post_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-
-    post = get_post_check(db, post_id)
-
-    check_post_author(post, current_user)
-    
-    # 삭제 
-    db.delete(post)
-    db.commit()
-    
-    return {"message": "게시물이 삭제되었습니다."}
 
 @router.delete("/delete-multiple")
 def delete_multiple_posts(
@@ -377,4 +359,22 @@ def delete_multiple_posts(
 
     db.commit()
     return {"message": f"{deleted_count}개의 게시글이 삭제되었습니다."}
+
+@router.delete("/{post_id}")
+def delete_post(
+    post_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    post = get_post_check(db, post_id)
+
+    check_post_author(post, current_user)
+    
+    # 삭제 
+    db.delete(post)
+    db.commit()
+    
+    return {"message": "게시물이 삭제되었습니다."}
+
 
