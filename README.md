@@ -112,7 +112,7 @@ project/
 
 ## 🗄 데이터베이스 스키마
 
-[ERD 다이어그램](./ERD.png)
+![ERD 다이어그램](./ERD.png)
 
 ### 주요 테이블
 
@@ -256,35 +256,27 @@ FastAPI는 자동으로 API 문서를 생성합니다.
 
 ### API 엔드포인트
 
-#### 인증 API
+**인증**
 - `POST /auth/register` - 회원가입
 - `POST /auth/login` - 로그인
-- `GET /auth/me` - 내 정보 조회
-- `PUT /auth/profile` - 프로필 수정
-- `PUT /auth/password` - 비밀번호 변경
+- `GET /auth/me` - 내 정보
 
-#### 게시글 API
-- `POST /blog` - 게시글 작성
-- `GET /blog` - 게시글 목록 조회
-- `GET /blog/{post_id}` - 게시글 상세 조회
-- `PUT /blog/{post_id}` - 게시글 수정
-- `DELETE /blog/{post_id}` - 게시글 삭제
-- `GET /blog?search={keyword}` - 게시글 검색
-- `GET /blog/tags/{tag_name}` - 태그별 게시글 조회
+**게시글**
+- `POST /blog` - 작성
+- `GET /blog` - 목록 조회
+- `GET /blog/{id}` - 상세 조회
+- `PUT /blog/{id}` - 수정
+- `DELETE /blog/{id}` - 삭제
 
-#### 댓글 API
-- `POST /blog/{post_id}/comments` - 댓글 작성
-- `GET /blog/{post_id}/comments` - 댓글 목록 조회
-- `PUT /comments/{comment_id}` - 댓글 수정
-- `DELETE /comments/{comment_id}` - 댓글 삭제
-- `POST /comments/{comment_id}/replies` - 대댓글 작성
+**댓글**
+- `POST /blog/{id}/comments` - 댓글 작성
+- `POST /comments/{id}/replies` - 대댓글 작성
 
-#### 문제 관리 API
-- `GET /problems` - 문제 목록 조회
+**문제**
+- `GET /problems` - 문제 목록
 - `POST /problems/my` - 문제 선택
-- `GET /problems/my` - 내가 선택한 문제 조회
-- `DELETE /problems/my/{id}` - 문제 선택 취소
-- `GET /problems/popular` - 인기 문제 Top 10 조회
+- `GET /problems/my` - 내 문제 조회
+- `GET /problems/popular` - 인기 문제 Top 10
 
 ---
 
@@ -441,7 +433,16 @@ def delete_my_problem(user_problem_id: int, ...):
 ```
 
 ---
+## 🚀 향후 발전 계획
 
+### AI 기반 학습 서비스
+- 변형 문제 생성: 사용자가 선택한 문제를 기반으로 AI가 유사 난이도의 변형 문제 자동 생성
+
+### 서비스 고도화
+- 관리자 대시보드: 통계 분석 및 콘텐츠 관리 개선
+- 사용자 활동 분석 (문제 선택 패턴, 인기 카테고리)
+
+---
 ## 📖 배운 점
 
 ### 코드 효율성
