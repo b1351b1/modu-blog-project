@@ -116,12 +116,39 @@ project/
 
 ### 핵심 테이블
 
-**User** - 사용자 정보 (이메일, 비밀번호, 권한)  
-**Problem** - 영어 문제 (연도, 월, 번호, 난이도)  
-**UserProblem** - 사용자의 문제 선택 이력  
-**Post** - 게시글 (제목, 내용, 카테고리, 조회수)  
-**Comment** - 댓글 및 대댓글  
-**Tag / PostTag** - 게시글 태그
+#### User (사용자)
+- 사용자 정보 관리
+- **주요 필드**: user_id, email, password, name, nickname, role
+- **역할**: 일반 사용자(user) / 관리자(admin)
+
+#### Problem (영어 문제)
+- 영어 기출 문제 정보
+- **주요 필드**: problem_id, year, month, number, title, file_url, difficulty
+- **특징**: 연도별/월별 문제 관리, 난이도 설정 가능
+
+#### UserProblem (사용자-문제 선택)
+- 사용자가 선택한 문제 이력 관리
+- **주요 필드**: user_problem_id, user_id, problem_id, selection_count
+- **특징**: 문제 선택 횟수, 최초/최근 선택 시간 추적
+
+#### Post (게시글)
+- 게시글 정보 관리
+- **주요 필드**: post_id, user_id, title, content, category, image_url, view_count
+- **카테고리**: 입시정보, 영어지식 등
+- **특징**: 조회수 추적, 이미지 첨부 가능
+
+#### Comment (댓글)
+- 게시글 댓글 및 대댓글
+- **주요 필드**: comment_id, post_id, user_id, parent_comment_id, content
+- **특징**: 계층형 구조 (대댓글 지원)
+
+#### Tag (태그)
+- 게시글 분류용 태그
+- **주요 필드**: tag_id, name
+
+#### PostTag (게시글-태그 연결)
+- 게시글과 태그의 다대다 관계 관리
+- **주요 필드**: post_tag_id, post_id, tag_id
 ---
 
 ## 🚀 설치 및 실행
