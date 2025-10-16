@@ -4,28 +4,66 @@ FastAPI 기반의 영어 교육 플랫폼으로, 입시 정보 공유와 영어 
 
 ---
 
-## 📌 프로젝트 개요
+## 📋 목차
 
-**프로젝트 기간**: 2025년 10월 1일 ~ 10월 16일 (16일)
+- [프로젝트 개요](#-프로젝트-개요)
+- [주요 기능](#-주요-기능)
+- [기술 스택](#-기술-스택)
+- [프로젝트 구조](#-프로젝트-구조)
+- [데이터베이스 스키마](#-데이터베이스-스키마)
+- [설치 및 실행](#-설치-및-실행)
+- [API 문서](#-api-문서)
+- [프로젝트 일정](#-프로젝트-일정)
+- [트러블슈팅](#-트러블슈팅)
+- [배운 점](#-배운-점)
 
-이 프로젝트는 JWT 인증, 게시글 CRUD, 댓글 기능, 문제 선택 기능을 포함한 종합 교육 블로그 플랫폼입니다.
+---
+
+## 🌟 프로젝트 개요
+
+이 프로젝트는 JWT 인증, 게시글 CRUD, 댓글 기능, 문제 선택 기능을 포함한 종합 블로그 플랫폼입니다.
+
+### 주요 역할
+
+#### 1️⃣ 관리자
+- 게시글 작성 및 삭제 권한
+- 영어 문제 등록 기능
+- 인기 문제 통계 확인
+- 데이터 기반 서비스 정교화 가능
+
+#### 2️⃣ 사용자
+- 게시글 읽기 전용
+- 영어 문제 선택 및 마이페이지 저장
+- 향후 선택한 문제 기반 AI 변형 문제 서비스의 소비자
 
 ---
 
 ## 🌟 주요 기능
 
-### 1️⃣ **게시판 기능**
+### 1️⃣ 게시판 기능
 - **입시정보 게시판**: 대학 입시 일정, 전형 정보, 수시/정시 전략 제공
 - **영어지식 게시판**: 영어 문법, 학습 방법론, 문제 유형별 접근법 공유
+- 게시글 CRUD (생성, 조회, 수정, 삭제)
+- 검색 및 필터링
+- 페이지네이션
+- 태그 기반 분류
 
-### 2️⃣ **문제 선택 및 관리**
+### 2️⃣ 문제 선택 및 관리
 - 영어 문제 선택 (연도 → 월 → 문제 번호)
 - 마이페이지에서 선택한 문제 관리 및 조회
-- 향후 계획: 선택한 문제 기반 AI 변형 문제 생성 서비스 제공 
+- Redis 기반 인기 문제 Top 10 추적
+- 문제 선택 이력 관리
 
-### 3️⃣ **커뮤니티 기능**
-- 게시글별 댓글 및 대댓글 작성
-- 계층형 댓글 구조 지원
+### 3️⃣ 커뮤니티 기능
+- 게시글별 댓글 작성
+- 대댓글 기능 (계층형 구조)
+- 댓글 수정 및 삭제
+
+### 4️⃣ 인증 및 사용자 관리
+- JWT 기반 인증
+- 회원가입 및 로그인
+- 프로필 관리
+- 비밀번호 변경
 
 ---
 
@@ -47,11 +85,12 @@ FastAPI 기반의 영어 교육 플랫폼으로, 입시 정보 공유와 영어 
 
 ## 📁 프로젝트 구조
 
-```bash
+```
 project/
 ├── main.py                 # FastAPI 애플리케이션 진입점
 ├── database.py             # 데이터베이스 연결 설정
 ├── requirements.txt        # 의존성 목록
+├── create_admin.py         # 관리자 계정 생성 스크립트
 │
 ├── models/                 # SQLAlchemy 모델
 │   ├── user.py            # 사용자 모델
@@ -76,27 +115,193 @@ project/
 │   └── problems/          # 문제 파일
 │
 ├── blog.db                 # SQLite 데이터베이스
+├── ERD.png                # 데이터베이스 ERD
 └── README.md              # 프로젝트 문서
 ```
 
 ---
 
-## 🗄 데이터베이스 스키마 (ERD)
+## 🗄 데이터베이스 스키마
 
-![ERD](./ERD.png)
+[ERD 다이어그램](./ERD.png)
 
 ### 주요 테이블
-- **User**: 사용자 정보 (이메일, 비밀번호, 이름, 닉네임, 권한)
-- **Problem**: 영어 문제 정보 (연도, 월, 번호, 제목, 파일, 난이도)
-- **UserProblem**: 사용자-문제 선택 관계 (선택 횟수, 선택 시간)
-- **Post**: 게시글 (제목, 내용, 카테고리, 이미지, 조회수)
-- **Comment**: 댓글 (내용, 계층형 구조)
-- **Tag**: 태그 (게시글 분류)
-- **PostTag**: 게시글-태그 관계
+
+#### User (사용자)
+- `user_id`: 기본키
+- `email`: 이메일 (고유)
+- `password`: 비밀번호 (해시)
+- `name`: 이름
+- `nickname`: 닉네임
+- `role`: 권한 (admin/user)
+- `created_at`, `updated_at`: 타임스탬프
+
+#### Problem (문제)
+- `problem_id`: 기본키
+- `year`: 연도
+- `month`: 월
+- `number`: 문제 번호
+- `title`: 제목
+- `file_url`: 파일 경로
+- `difficulty`: 난이도
+- `created_at`: 생성일
+
+#### UserProblem (사용자-문제 선택)
+- `user_problem_id`: 기본키
+- `user_id`: 사용자 외래키
+- `problem_id`: 문제 외래키
+- `selection_count`: 선택 횟수
+- `first_selected_at`: 최초 선택 시간
+- `last_selected_at`: 최근 선택 시간
+
+#### Post (게시글)
+- `post_id`: 기본키
+- `user_id`: 작성자 외래키
+- `title`: 제목
+- `content`: 내용
+- `category`: 카테고리
+- `image_url`: 이미지 경로
+- `view_count`: 조회수
+- `created_at`, `updated_at`: 타임스탬프
+
+#### Comment (댓글)
+- `comment_id`: 기본키
+- `post_id`: 게시글 외래키
+- `user_id`: 작성자 외래키
+- `parent_comment_id`: 부모 댓글 (대댓글용)
+- `content`: 내용
+- `created_at`, `updated_at`: 타임스탬프
+
+#### Tag (태그)
+- `tag_id`: 기본키
+- `name`: 태그명
+- `created_at`: 생성일
+
+#### PostTag (게시글-태그 관계)
+- `post_tag_id`: 기본키
+- `post_id`: 게시글 외래키
+- `tag_id`: 태그 외래키
+- `created_at`: 생성일
 
 ---
 
-## 📅 프로젝트 일정 (WBS)
+## 🚀 설치 및 실행
+
+### 1. 가상환경 생성 및 활성화
+
+```bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 2. 필요한 패키지 설치
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Redis 설치 및 실행
+
+**Windows:**
+```bash
+# Redis 다운로드 및 설치 (https://github.com/microsoftarchive/redis/releases)
+# 설치 후 Redis 서버 실행
+redis-server
+```
+
+**macOS:**
+```bash
+brew install redis
+brew services start redis
+```
+
+**Linux:**
+```bash
+sudo apt-get install redis-server
+sudo systemctl start redis
+```
+
+### 4. 환경변수 설정
+
+프로젝트 루트에 `.env` 파일을 생성하고 다음 내용을 입력합니다:
+
+```env
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+### 5. 데이터베이스 및 관리자 계정 초기화
+
+```bash
+# 관리자 계정 생성 (테이블도 자동 생성됨)
+python create_admin.py
+```
+
+**관리자 계정 정보:**
+- 아이디: `admin`
+- 비밀번호: `admin1234`
+- 이메일: `admin@example.com`
+
+### 6. 서버 실행
+
+```bash
+uvicorn main:app --reload
+```
+
+서버가 실행되면 `http://localhost:8000`에서 접속 가능합니다.
+
+---
+
+## 📚 API 문서
+
+FastAPI는 자동으로 API 문서를 생성합니다.
+
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+### API 엔드포인트
+
+#### 인증 API
+- `POST /auth/register` - 회원가입
+- `POST /auth/login` - 로그인
+- `GET /auth/me` - 내 정보 조회
+- `PUT /auth/profile` - 프로필 수정
+- `PUT /auth/password` - 비밀번호 변경
+
+#### 게시글 API
+- `POST /blog` - 게시글 작성
+- `GET /blog` - 게시글 목록 조회
+- `GET /blog/{post_id}` - 게시글 상세 조회
+- `PUT /blog/{post_id}` - 게시글 수정
+- `DELETE /blog/{post_id}` - 게시글 삭제
+- `GET /blog?search={keyword}` - 게시글 검색
+- `GET /blog/tags/{tag_name}` - 태그별 게시글 조회
+
+#### 댓글 API
+- `POST /blog/{post_id}/comments` - 댓글 작성
+- `GET /blog/{post_id}/comments` - 댓글 목록 조회
+- `PUT /comments/{comment_id}` - 댓글 수정
+- `DELETE /comments/{comment_id}` - 댓글 삭제
+- `POST /comments/{comment_id}/replies` - 대댓글 작성
+
+#### 문제 관리 API
+- `GET /problems` - 문제 목록 조회
+- `POST /problems/my` - 문제 선택
+- `GET /problems/my` - 내가 선택한 문제 조회
+- `DELETE /problems/my/{id}` - 문제 선택 취소
+- `GET /problems/popular` - 인기 문제 Top 10 조회
+
+---
+
+## 📅 프로젝트 일정
+
+**프로젝트 기간**: 2025년 10월 1일 ~ 10월 16일
 
 ```mermaid
 gantt
@@ -150,123 +355,6 @@ gantt
 
 ---
 
-## 🚀 설치 및 실행
-
-### 1. 가상환경 생성 및 활성화
-
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
-
-# macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### 2. 필요한 패키지 설치
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Redis 설치 및 실행
-
-**Windows:**
-```bash
-# Redis 다운로드 및 설치 (https://github.com/microsoftarchive/redis/releases)
-# 설치 후 Redis 서버 실행
-redis-server
-```
-
-**macOS:**
-```bash
-brew install redis
-brew services start redis
-```
-
-**Linux:**
-```bash
-sudo apt-get install redis-server
-sudo systemctl start redis
-```
-
-### 4. 환경변수 설정
-
-프로젝트 루트에 `.env` 파일을 생성하고 다음 내용을 입력합니다:
-
-```env
-SECRET_KEY=your-secret-key-here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-OPENAI_API_KEY=your-openai-api-key-here
-```
-
-### 5. 데이터베이스 및 관리자 계정 초기화
-
-```bash
-# 관리자 계정 생성 (테이블도 자동 생성됨)
-python create_admin.py
-```
-
-실행 후 관리자 계정 정보:
-- **아이디**: admin
-- **비밀번호**: admin1234
-- **이메일**: admin@example.com
-
-### 6. 서버 실행
-
-```bash
-uvicorn main:app --reload
-```
-
-서버가 실행되면 `http://localhost:8000`에서 접속 가능합니다.
-
----
-
-## 📚 API 문서
-
-FastAPI는 자동으로 API 문서를 생성합니다.
-
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
----
-
-## 🔑 API 엔드포인트
-
-### 인증 API
-- `POST /auth/register` - 회원가입
-- `POST /auth/login` - 로그인
-- `GET /auth/me` - 내 정보 조회
-- `PUT /auth/profile` - 프로필 수정
-- `PUT /auth/password` - 비밀번호 변경
-
-### 게시글 API
-- `POST /blog` - 게시글 작성
-- `GET /blog` - 게시글 목록 조회
-- `GET /blog/{post_id}` - 게시글 상세 조회
-- `PUT /blog/{post_id}` - 게시글 수정
-- `DELETE /blog/{post_id}` - 게시글 삭제
-- `GET /blog?search={keyword}` - 게시글 검색
-- `GET /blog/tags/{tag_name}` - 태그별 게시글 조회
-
-### 댓글 API
-- `POST /blog/{post_id}/comments` - 댓글 작성
-- `GET /blog/{post_id}/comments` - 댓글 목록 조회
-- `PUT /comments/{comment_id}` - 댓글 수정
-- `DELETE /comments/{comment_id}` - 댓글 삭제
-- `POST /comments/{comment_id}/replies` - 대댓글 작성
-
-### 문제 관리 API
-- `GET /problems` - 문제 목록 조회
-- `POST /problems/my` - 문제 선택
-- `GET /problems/my` - 내가 선택한 문제 조회
-- `DELETE /problems/my/{id}` - 문제 선택 취소
-- `GET /problems/popular` - 인기 문제 Top 10 조회
-
----
-
 ## 🔧 개발 가이드
 
 ### Git 브랜치 전략
@@ -284,14 +372,109 @@ refactor: 코드 리팩토링
 test: 테스트 코드
 chore: 빌드 업무, 패키지 관리
 ```
+
 ---
 
 ## 🐛 트러블슈팅
 
-프로젝트 진행 중 발생한 주요 이슈와 해결 방법은 추후 업데이트됩니다.
+### 1. 게시글 작성 시 404 권한 오류
+
+**문제**: JWT 토큰 인증 실패로 404 에러 발생
+
+**해결**:
+```python
+SECRET_KEY = "TEST-ASDASDASDASDASDASDASDSA"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+def create_token(user_id: int):
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    token_data = {"sub": str(user_id), "exp": expire}
+    return jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
+```
+
+### 2. 게시글 작성 시 500 서버 오류
+
+**문제**: Post 테이블에 `image_url` 컬럼 추가했지만 실제 DB에 반영 안 됨
+
+**해결**: DB 재생성
+
+### 3. 문제 중복 등록 방지 + selection_count 증가
+
+**문제**: 같은 문제를 여러 번 선택할 때 중복 생성됨
+
+**해결**:
+```python
+user_problem = db.query(UserProblem).filter(
+    UserProblem.user_id == current_user.user_id,
+    UserProblem.problem_id == request.problem_id
+).first()
+
+if user_problem:
+    # 이미 선택한 문제면 카운트 증가
+    user_problem.selection_count += 1
+    user_problem.last_selected_at = datetime.utcnow()
+else:
+    # 새로 선택
+    user_problem = UserProblem(
+        user_id=current_user.user_id,
+        problem_id=request.problem_id,
+        selection_count=1,
+        first_selected_at=datetime.utcnow(),
+        last_selected_at=datetime.utcnow()
+    )
+    db.add(user_problem)
+
+db.commit()
+db.refresh(user_problem)
+
+if redis_client:
+    redis_client.zincrby("popular_problems", 1, request.problem_id)
+```
+
+### 4. 문제 삭제 시에도 Redis 인기도 유지
+
+**비즈니스 로직**:
+- 삭제 = 마이페이지 정리용
+- 이미 서비스 이용 완료 & 과금 완료
+- 인기도는 '실제 서비스 이용 횟수'이므로 삭제와 무관
+
+**해결**:
+```python
+@router.delete("/my/{user_problem_id}")
+def delete_my_problem(user_problem_id: int, ...):
+    # Redis 인기도는 건드리지 않음
+    db.delete(user_problem)
+    db.commit()
+    return {"message": "문제가 내 문제 목록에서 삭제되었습니다."}
+```
 
 ---
 
-## 📞 문의
+## 📖 배운 점
 
-프로젝트 관련 문의사항은 이슈를 등록해주세요.
+### 코드 효율성
+- 효율적인 코드 작성 방법에 대한 고민
+- 논리적인 코드 진행 방식과 오류 점검 프로세스 학습
+- 개발자적 마인드 함양
+
+### 기술적 성장
+- FastAPI의 요청·응답 흐름 이해 심화
+- 클라이언트/서버 구조에 대한 이해
+- Redis를 활용한 캐싱 및 데이터 추적
+- JWT 기반 인증/인가 시스템 구현
+
+### 서비스 기획
+- 정보 가치가 있는 블로그 설계
+- 사용자 경험을 고려한 기능 구현
+- 데이터 기반 서비스 정교화 방안 모색
+
+---
+
+## 👥 개발자
+
+**프로젝트 기간**: 2025.10.01 ~ 2025.10.16
+
+---
