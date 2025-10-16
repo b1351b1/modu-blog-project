@@ -419,7 +419,7 @@ def delete_my_problem(user_problem_id: int, ...):
 - 사용자 경험을 고려한 기능 구현 
 ---
 
-## 👥 개발자 (팀원)
+## 👥 개발자
 - 신가람, 이승철
 
 ---
