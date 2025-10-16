@@ -119,7 +119,7 @@ gantt
     section CRUD 기능
     Problem 모델 완성      :done, 2025-10-06, 1d
     문제 관리 API         :done, 2025-10-07, 2d
-    게시글 CRUD API       :done, 2025-10-07, 2d
+    게시글 CRUD API       :done, 2025-10-06, 4d
     댓글 기능 API         :done, 2025-10-08, 2d
     
     section 추가 기능
